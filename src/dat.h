@@ -3,8 +3,22 @@
 
 #include "unicode/utf8.h"
 
+typedef char TrieChar; // todo UTF8
 typedef long int TrieIndex;
 typedef long int TrieBase;
+typedef long int TailIndex;
+
+typedef struct {
+    TrieChar *chars;
+    TrieIndex length;
+    TailIndex nextFree;
+} TailCell;
+
+typedef struct {
+    TailCell *cells;
+    TailIndex cellsSize;
+    TailIndex firstFree;
+} Tail;
 
 typedef struct {
     TrieBase base;
@@ -14,6 +28,7 @@ typedef struct {
 typedef struct {
     Cell *cells;
     TrieIndex cellsSize;
+    Tail *tail;
 } Trie;
 
 typedef struct {
