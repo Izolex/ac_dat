@@ -7,6 +7,12 @@
 
 typedef unsigned char AlphabetSize;
 
+#define TRIE_END_OF_TEXT '\3'
+
+void trie_insertEndOfText(Trie *trie, TrieIndex check);
+
+
+
 
 const int ALLOCATION_STEP = 2;
 const TrieIndex TRIE_POOL_INFO = 0;
@@ -409,6 +415,9 @@ void trie_insertBranch(
     }
 
     trie_insertNode(trie, state, newNodeBase, check);
+    if (newNodeBase > 0) {
+        trie_insertEndOfText(trie, state);
+    }
 }
 
 TrieIndex trie_insert(
@@ -433,6 +442,15 @@ TrieIndex trie_insert(
         return newState;
     }
 }
+
+void trie_insertEndOfText(
+    Trie *trie,
+    TrieIndex check
+) {
+    TrieBase base = trie_getBase(trie, check);
+    trie_insert(trie, check, base, TRIE_END_OF_TEXT);
+}
+
 void trie_collisionInTail(
         Trie *trie,
         TrieIndex state,
@@ -482,6 +500,9 @@ void trie_collisionInTail(
         needleNodeBase = -tail_insertChars(trie->tail, tailCharsLength, chars);
     }
     state = trie_insert(trie, state, needleNodeBase, needle[needleIndex + commonTailLength + 1]);
+    if (needleNodeBase > 0) {
+        trie_insertEndOfText(trie, state);
+    }
     state = trie_getCheck(trie, state);
 
 
@@ -496,7 +517,12 @@ void trie_collisionInTail(
 
         tailNodeBase = -tail_insertChars(trie->tail, tailCharsLength, chars);
     }
-    trie_insert(trie, state, tailNodeBase, tailCell.chars[commonTailLength]);
+    if (commonTailLength < tailCell.length) {
+        state = trie_insert(trie, state, tailNodeBase, tailCell.chars[commonTailLength]);
+    }
+    if (tailNodeBase > 0) {
+        trie_insertEndOfText(trie, state);
+    }
 
 
     tail_freeCell(trie->tail, tailIndex);
@@ -517,18 +543,20 @@ void trieBuilder_addNeedle(TrieBuilder *builder, const char *needle) {
 
         if (check <= 0) {
             trie_insertBranch(builder->trie, newState, 1, lastState, length, needle);
-            break;
+            return;
         } else if (check != lastState) {
             lastState = trie_solveCollision(builder->trie, lastState, newState, 1, code);
         } else if (base < 0) {
             trie_collisionInTail(builder->trie, newState, lastState, length, needle);
-            break;
+            return;
         } else {
             lastState = newState;
         }
 
         length++;
     }
+
+    trie_insertEndOfText(builder->trie, lastState);
 }
 
 void trie_find(Trie *trie, const char *needle) {
@@ -563,6 +591,16 @@ void trie_find(Trie *trie, const char *needle) {
         }
 
         length++;
+    }
+
+    TrieBase base = trie_getBase(trie, state);
+    TrieIndex newState = base + u8decode(TRIE_END_OF_TEXT);
+    TrieIndex check = trie_getCheck(trie, newState);
+
+    if (check != state) {
+        printf("can not search word (EOT)\n");
+        trieBuilder_print(trie);
+        exit(1);
     }
 }
 

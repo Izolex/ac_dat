@@ -36,6 +36,9 @@ void trieBuilder_print(Trie *trie) {
 
 uint32_t u8decode(uint32_t c)
 {
+    if (c == 3) {
+        return 3;
+    }
     if (c >= 97) {
         return c - 95;
     }
