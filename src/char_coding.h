@@ -3,8 +3,8 @@
 
 #include "unicode/utf8.h"
 
-int utf8Length(const char * string);
+int utf8Length(const char string);
 int utf8validate(const char * string);
-uint32_t utf8toUnicode(const char string[4]);
+u_int32_t utf8toUnicode(const char string[4]);
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "unicode/utf8.h"
 
-typedef char TrieChar; // todo UTF8
+typedef u_int32_t TrieChar;
 typedef long int TrieIndex;
 typedef long int TrieBase;
 typedef long int TailIndex;
@@ -35,9 +35,17 @@ typedef struct {
     Trie *trie;
 } TrieBuilder;
 
+typedef struct {
+    TrieChar * characters;
+    int length;
+    int error;
+} TrieNeedle;
+
+
 TrieBuilder* create_TrieBuilder();
-void trieBuilder_addNeedle(TrieBuilder *builder, const char *needle);
-void trie_find(Trie *trie, const char *needle);
+TrieNeedle *createNeedle(const char *needle);
+void trie_addNeedle(Trie *trie, TrieNeedle *needle);
+void trie_find(Trie *trie, TrieNeedle *needle);
 TrieIndex trie_findLastFilled(Trie *trie);
 
 #endif

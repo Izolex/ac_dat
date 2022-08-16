@@ -4,6 +4,7 @@
 #include "unicode/utf8.h"
 #include "dat.h"
 #include "debug.h"
+#include "char_coding.h"
 
 typedef unsigned char AlphabetSize;
 
@@ -392,23 +393,18 @@ void trie_insertBranch(
         TrieIndex state,
         TrieBase base,
         TrieIndex check,
-        int needleIndex,
-        const TrieChar * needle
+        TrieNeedle *needle,
+        int needleIndex
 ) {
-    int needleLength = needleIndex;
-    while (needle[needleLength] != '\0') {
-        needleLength++;
-    }
-
     TrieIndex newNodeBase = base;
-    int tailCharsLength = needleLength - needleIndex - 1;
+    int tailCharsLength = needle->length - needleIndex - 1;
     if (tailCharsLength > 0) {
         TrieChar *chars = tail_allocateChars(tailCharsLength);
 
         int c = 0;
         int i = needleIndex + 1;
-        for (; i < needleLength; i++, c++) {
-            chars[c] = needle[i];
+        for (; i < needle->length; i++, c++) {
+            chars[c] = needle->characters[i];
         }
 
         newNodeBase = -tail_insertChars(trie->tail, tailCharsLength, chars);
@@ -424,11 +420,10 @@ TrieIndex trie_insert(
     Trie *trie,
     TrieIndex lastState,
     TrieBase base,
-    TrieChar n
+    TrieChar character
 ) {
     TrieBase lastBase = trie_getBase(trie, lastState);
-    TrieChar code = u8decode(n);
-    TrieIndex newState = code + lastBase;
+    TrieIndex newState = character + lastBase;
 
     TrieBase newStateBase = trie_getBase(trie, newState);
     TrieIndex check = trie_getCheck(trie, newState);
@@ -437,7 +432,7 @@ TrieIndex trie_insert(
         trie_insertNode(trie, newState, base, lastState);
         return newState;
     } else if (check != lastState || newStateBase < 0) {
-        return trie_solveCollision(trie, lastState, newState, base, code);
+        return trie_solveCollision(trie, lastState, newState, base, character);
     } else {
         return newState;
     }
@@ -455,22 +450,21 @@ void trie_collisionInTail(
         Trie *trie,
         TrieIndex state,
         TrieIndex check,
-        int needleIndex,
-        const TrieChar * needle
+        TrieNeedle *needle,
+        int needleIndex
 ) {
     TrieIndex tailIndex = -trie_getBase(trie, state);
     TailCell tailCell = trie->tail->cells[tailIndex];
 
     char areSame = 1;
-    int needleLength = needleIndex + 1;
     int commonTailLength = 0;
-    while (needle[needleLength] != '\0') {
-        if (areSame == 1 && commonTailLength < tailCell.length && tailCell.chars[commonTailLength] == needle[needleLength]) {
+    for (int i = needleIndex + 1; i < needle->length; i++) {
+        if (commonTailLength < tailCell.length && tailCell.chars[commonTailLength] == needle->characters[i]) {
             commonTailLength++;
         } else {
             areSame = 0;
+            break;
         }
-        needleLength++;
     }
 
     if (areSame == 1) {
@@ -487,19 +481,19 @@ void trie_collisionInTail(
 
 
     TailIndex needleNodeBase = base;
-    if ((needleLength - needleIndex - commonTailLength - 1) > 1) {
-        int tailCharsLength = needleLength - needleIndex - commonTailLength - 2;
+    if ((needle->length - needleIndex - commonTailLength - 1) > 1) {
+        int tailCharsLength = needle->length - needleIndex - commonTailLength - 2;
         TrieChar *chars = tail_allocateChars(tailCharsLength);
 
         int c = 0;
         int i = needleIndex + commonTailLength + 2;
-        for (; i < needleLength; i++, c++) {
-            chars[c] = needle[i];
+        for (; i < needle->length; i++, c++) {
+            chars[c] = needle->characters[i];
         }
 
         needleNodeBase = -tail_insertChars(trie->tail, tailCharsLength, chars);
     }
-    state = trie_insert(trie, state, needleNodeBase, needle[needleIndex + commonTailLength + 1]);
+    state = trie_insert(trie, state, needleNodeBase, needle->characters[needleIndex + commonTailLength + 1]);
     if (needleNodeBase > 0) {
         trie_insertEndOfText(trie, state);
     }
@@ -528,62 +522,98 @@ void trie_collisionInTail(
     tail_freeCell(trie->tail, tailIndex);
 }
 
-void trieBuilder_addNeedle(TrieBuilder *builder, const char *needle) {
-    int length = 0;
+TrieNeedle *createNeedle(const char *needle) {
+    TrieNeedle *trieNeedle = calloc(1, sizeof(TrieNeedle));
+    if (trieNeedle == NULL) {
+        fprintf(stderr, "can not allocate memory for trie needle");
+        exit(1);
+    }
+
+    int index = 0;
+    while (needle[index] != '\0') {
+        int length = utf8Length(needle[index]);
+        if (length == 0) {
+            return NULL;
+        }
+        index += length;
+        trieNeedle->length++;
+    }
+
+    trieNeedle->characters = malloc(sizeof(TrieChar) * trieNeedle->length);
+
+    int needleIndex = 0;
+    for (int i = 0; i < trieNeedle->length; i++) {
+        int length = utf8Length(needle[needleIndex]);
+
+        char utf8Char[4];
+        for (int c = 0; c < length; c++) {
+            utf8Char[c] = needle[needleIndex + c];
+        }
+
+        if (!utf8validate(utf8Char)) {
+            return NULL;
+        }
+
+        trieNeedle->characters[i] = utf8toUnicode(utf8Char);
+        needleIndex += length;
+    }
+
+    return trieNeedle;
+}
+
+void trie_addNeedle(Trie *trie, TrieNeedle *needle) {
     TrieIndex lastState = TRIE_POOL_START;
 
-    while (needle[length] != '\0') {
-        TrieBase lastBase = trie_getBase(builder->trie, lastState);
-        uint32_t n = needle[length];
-        TrieChar code = u8decode(n);
-        TrieIndex newState = code + lastBase;
+    for (int i = 0; i < needle->length; i++) {
+        TrieBase lastBase = trie_getBase(trie, lastState);
+        TrieChar character = needle->characters[i];
+        TrieIndex newState = character + lastBase;
 
-        TrieBase base = trie_getBase(builder->trie, newState);
-        TrieIndex check = trie_getCheck(builder->trie, newState);
+        TrieBase base = trie_getBase(trie, newState);
+        TrieIndex check = trie_getCheck(trie, newState);
 
         if (check <= 0) {
-            trie_insertBranch(builder->trie, newState, 1, lastState, length, needle);
+            trie_insertBranch(trie, newState, 1, lastState, needle, i);
             return;
         } else if (check != lastState) {
-            lastState = trie_solveCollision(builder->trie, lastState, newState, 1, code);
+            lastState = trie_solveCollision(trie, lastState, newState, 1, character);
         } else if (base < 0) {
-            trie_collisionInTail(builder->trie, newState, lastState, length, needle);
+            trie_collisionInTail(trie, newState, lastState, needle, i);
             return;
         } else {
             lastState = newState;
         }
-
-        length++;
     }
 
-    trie_insertEndOfText(builder->trie, lastState);
+    trie_insertEndOfText(trie, lastState);
 }
 
-void trie_find(Trie *trie, const char *needle) {
-    int length = 0;
+void trie_find(Trie *trie, TrieNeedle *needle) {
     TrieIndex state = TRIE_POOL_START;
 
-    while (needle[length] != '\0') {
+    int length = 0;
+    for (int i = 0; i < needle->length; i++) {
         TrieBase base = trie_getBase(trie, state);
-        uint32_t n = needle[length];
-        TrieChar code = u8decode(n);
-        TrieIndex newState = code + base;
+        TrieChar character = needle->characters[i];
+        TrieIndex newState = character + base;
         TrieIndex check = trie_getCheck(trie, newState);
-
-        printf("WORD %c\n", n);
 
         if (check == state) {
             state = newState;
         } else if (base < 0) {
             TailCell tailCell = trie->tail->cells[-base];
-            for (int i = 0; i < tailCell.length; i++) {
-                if (tailCell.chars[i] != needle[length]) {
+            int tailIterator = 0;
+            for (; tailIterator < tailCell.length; tailIterator++) {
+                if (tailCell.chars[tailIterator] != needle->characters[length]) {
                     printf("can not search word (tail)\n");
                     exit(1);
                 }
                 length++;
             }
-            // todo check over length
+            if (length != needle->length || tailIterator != tailCell.length) {
+                printf("can not search word (tail length)\n");
+                exit(1);
+            }
             return;
         } else {
             printf("can not search word\n");
@@ -594,12 +624,11 @@ void trie_find(Trie *trie, const char *needle) {
     }
 
     TrieBase base = trie_getBase(trie, state);
-    TrieIndex newState = base + u8decode(TRIE_END_OF_TEXT);
+    TrieIndex newState = base + TRIE_END_OF_TEXT;
     TrieIndex check = trie_getCheck(trie, newState);
 
     if (check != state) {
         printf("can not search word (EOT)\n");
-        trieBuilder_print(trie);
         exit(1);
     }
 }

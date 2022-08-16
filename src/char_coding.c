@@ -14,20 +14,20 @@ utf8Mask *utf8MaskMap[] = {
         [4] = &(utf8Mask){0b00000111, 0b11110000, 3},
 };
 
-int utf8Length(const char * string) {
+int utf8Length(const char string) {
     for (int i = 1; i <= 4; i++) {
         utf8Mask *u = utf8MaskMap[i];
 
-        if ((string[0] & ~u->mask) == u->lead) {
+        if ((string & ~u->mask) == u->lead) {
             return i;
         }
     }
 
     return 0;
-};
+}
 
 int utf8validate(const char * string) {
-    int length = utf8Length(string);
+    int length = utf8Length(string[0]);
     if (length == 0) {
         return 0;
     }
@@ -41,8 +41,8 @@ int utf8validate(const char * string) {
     return 1;
 }
 
-uint32_t utf8toUnicode(const char string[4]) {
-    int length = utf8Length(string);
+u_int32_t utf8toUnicode(const char string[4]) {
+    int length = utf8Length(string[0]);
     int shift = utf8MaskMap[0]->bites * (length - 1);
 
     utf8Mask *u = utf8MaskMap[length];
