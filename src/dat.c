@@ -8,6 +8,7 @@
 #define TRIE_END_OF_TEXT '\3'
 
 void trie_insertEndOfText(Trie *trie, TrieIndex check);
+void trie_connectLinkedList(Trie *trie, TrieIndex fromIndex, TrieIndex toIndex);
 
 
 const int ALLOCATION_STEP = 2;
@@ -31,24 +32,23 @@ void trie_print(Trie *trie) {
     tail_print(trie->tail);
 }
 
-Trie *create_trie() {
-    Tail *tail = create_tail();
+Trie *create_trie(long int datSize, long int tailSize) {
+    Tail *tail = create_tail(tailSize);
     Trie *trie = malloc(sizeof(Trie));
 
     trie->tail = tail;
-    trie->cellsSize = 3;
+    trie->cellsSize = datSize;
     trie->cells = malloc(sizeof(Cell) * trie->cellsSize);
     trie->cells[0] = (Cell) {-2, -2}; // TRIE_POOL_INFO
     trie->cells[1] = (Cell) {1, 0}; // TRIE_POOL_START
-    trie->cells[2] = (Cell) {0, 0};
+    trie->cells[2] = (Cell) {0, -3};
+
+    trie_connectLinkedList(trie, 3, trie->cellsSize);
+
+    trie->cells[datSize - 1].check = 0;
+    trie->cells[0].base = -(datSize - 1);
 
     return trie;
-}
-
-TrieBuilder *create_TrieBuilder() {
-    TrieBuilder *builder = malloc(sizeof(TrieBuilder));
-    builder->trie = create_trie();
-    return builder;
 }
 
 TrieBase trie_getBase(Trie *trie, TrieIndex index) {
@@ -75,17 +75,22 @@ void trie_setBase(Trie *trie, TrieIndex index, TrieBase value) {
     trie->cells[index].base = value;
 }
 
-void trie_poolReallocate(Trie *trie, TrieIndex newSize) {
-    trie->cells = realloc(trie->cells, sizeof(Cell) * newSize);
-
-    for (TrieIndex i = trie->cellsSize; i < newSize; i++) {
+void trie_connectLinkedList(Trie *trie, TrieIndex fromIndex, TrieIndex toIndex) {
+    for (TrieIndex i = fromIndex; i < toIndex; i++) {
         trie->cells[i].base = -(i - 1); // prev empty cell
         trie->cells[i].check = -(i + 1); // next empty cell
     }
 
-    trie->cells[-trie->cells[0].base].check = -trie->cellsSize; // old last (empty) cell now points to first newly added empty cell
-    trie->cells[newSize - 1].check = 0; // new last (empty) cell does not have next empty cell
-    trie->cells[0].base = -(newSize - 1); // first base should point to last (empty) cell
+}
+
+void trie_poolReallocate(Trie *trie, TrieIndex newSize) {
+    trie->cells = realloc(trie->cells, sizeof(Cell) * newSize);
+
+    trie_connectLinkedList(trie, trie->cellsSize, newSize);
+
+    trie->cells[-trie->cells[0].base].check = -trie->cellsSize;
+    trie->cells[0].base = -(newSize - 1);
+    trie->cells[newSize - 1].check = 0;
 
     trie->cellsSize = newSize;
 }

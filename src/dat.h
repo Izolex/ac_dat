@@ -31,12 +31,8 @@ typedef struct {
     Tail *tail;
 } Trie;
 
-typedef struct {
-    Trie *trie;
-} TrieBuilder;
 
-
-TrieBuilder *create_TrieBuilder();
+Trie *create_trie(long int datSize, long int tailSize);
 void trie_addNeedle(Trie *trie, TrieNeedle *needle);
 void trie_find(Trie *trie, TrieNeedle *needle);
 TrieIndex trie_findLastFilled(Trie *trie);

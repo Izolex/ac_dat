@@ -45,7 +45,7 @@ int utf8validate(const char *string) {
     return 1;
 }
 
-u_int32_t utf8toUnicode(const char string[4]) {
+TrieChar utf8toUnicode(const char string[4]) {
     int length = utf8Length(string[0]);
     int shift = utf8MaskMap[0]->bites * (length - 1);
 

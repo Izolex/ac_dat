@@ -2,24 +2,23 @@
 #include <stdio.h>
 #include "dat.h"
 
-const int TAIL_ALLOCATION_STEP = 2;
-
-Tail *create_tail() {
-    Tail *tail = malloc(sizeof(Tail));
-
-    tail->cellsSize = 1;
-    tail->cells = malloc(sizeof(TailCell) * 1);
-    tail->cells[0] = (TailCell) {NULL, 0, 0};
-
-    return tail;
-}
-
 void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex) {
     for (TrieIndex i = fromIndex; i < toIndex; i++) {
         tail->cells[i].chars = NULL;
         tail->cells[i].length = 0;
         tail->cells[i].nextFree = i + 1; // next empty cell
     }
+}
+
+Tail *create_tail(long int size) {
+    Tail *tail = malloc(sizeof(Tail));
+
+    tail->cellsSize = size;
+    tail->cells = malloc(sizeof(TailCell) * tail->cellsSize);
+
+    tail_poolConnectNextFree(tail, 0, tail->cellsSize);
+
+    return tail;
 }
 
 void tail_poolReallocate(Tail *tail, TailIndex newSize) {
@@ -30,12 +29,6 @@ void tail_poolReallocate(Tail *tail, TailIndex newSize) {
     tail->cells[tail->cellsSize - 1].nextFree = tail->cellsSize;
     tail->cells[newSize - 1].nextFree = 0;
     tail->cellsSize = newSize;
-}
-
-void tail_poolCheckCapacity(Tail *tail, TailIndex index) {
-    if (tail->cellsSize <= index + 1) {
-        tail_poolReallocate(tail, index + 1 + TAIL_ALLOCATION_STEP);
-    }
 }
 
 void tail_freeCell(Tail *tail, TailIndex index) {
@@ -66,7 +59,7 @@ TailIndex tail_insertChars(Tail *tail, const int length, TrieChar *string) {
 
     if (index == 0) {
         index = tail->cellsSize;
-        tail_poolCheckCapacity(tail, index + 1);
+        tail_poolReallocate(tail, tail->cellsSize + (tail->cellsSize / 2));
     }
 
     tail->cells[0].nextFree = tail->cells[index].nextFree;
@@ -76,16 +69,6 @@ TailIndex tail_insertChars(Tail *tail, const int length, TrieChar *string) {
     tail->cells[index].nextFree = 0;
 
     return index;
-}
-
-TrieChar *tail_allocateChars(TrieIndex size) {
-    TrieChar *chars = malloc(sizeof(TrieChar) * size);
-    if (chars == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
-        exit(1);
-    }
-
-    return chars;
 }
 
 void tail_print(Tail *tail) {
