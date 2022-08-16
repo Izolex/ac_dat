@@ -48,4 +48,6 @@ void trie_addNeedle(Trie *trie, TrieNeedle *needle);
 void trie_find(Trie *trie, TrieNeedle *needle);
 TrieIndex trie_findLastFilled(Trie *trie);
 
+TrieChar *allocateTrieChars(TrieIndex size);
+
 #endif

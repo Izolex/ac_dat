@@ -5,6 +5,7 @@
 #include "dat.h"
 #include "debug.h"
 #include "char_coding.h"
+#include "tail.h"
 
 typedef unsigned char AlphabetSize;
 
@@ -12,6 +13,15 @@ typedef unsigned char AlphabetSize;
 
 void trie_insertEndOfText(Trie *trie, TrieIndex check);
 
+TrieChar *allocateTrieChars(TrieIndex size) {
+    TrieChar *chars = malloc(sizeof(TrieChar) * size);
+    if (chars == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
+        exit(1);
+    }
+
+    return chars;
+}
 
 
 
@@ -25,91 +35,6 @@ typedef struct {
     AlphabetSize count;
 } CharSet;
 
-Tail* create_tail() {
-    Tail *tail = malloc(sizeof(Tail));
-
-    TailCell c0;
-    c0.nextFree = 0;
-    c0.length = 0;
-    c0.chars = NULL;
-
-    tail->cellsSize = 1;
-    tail->cells = malloc(sizeof(TailCell) * 1);
-
-    return tail;
-}
-
-void tail_poolReallocate(Tail *tail, TailIndex newSize) {
-    tail->cells = realloc(tail->cells, sizeof(TailCell) * newSize);
-
-    for (TrieIndex i = tail->cellsSize; i < newSize; i++) {
-        tail->cells[i].chars = NULL;
-        tail->cells[i].length = 0;
-        tail->cells[i].nextFree = i+1; // next empty cell
-    }
-
-    tail->cells[tail->cellsSize - 1].nextFree = tail->cellsSize;
-    tail->cells[newSize - 1].nextFree = 0;
-    tail->cellsSize = newSize;
-}
-
-void tail_poolCheckCapacity(Tail *tail, TailIndex index) {
-    if (tail->cellsSize <= index + 1) {
-        tail_poolReallocate(tail, index + 1 + ALLOCATION_STEP);
-    }
-}
-
-void tail_freeCell(Tail *tail, TailIndex index) {
-    free(tail->cells[index].chars);
-
-    tail->cells[index].chars = NULL;
-    tail->cells[index].length = 0;
-
-    if (tail->cells[0].nextFree > index) {
-        tail->cells[index].nextFree = tail->cells[0].nextFree;
-        tail->cells[0].nextFree = index;
-    } else if (tail->cells[0].nextFree == 0) {
-        tail->cells[index].nextFree = 0;
-        tail->cells[0].nextFree = index;
-    } else {
-        TailIndex prevFree = index;
-        while (tail->cells[prevFree].nextFree != 0) {
-            prevFree--;
-        }
-
-        tail->cells[index].nextFree = tail->cells[prevFree].nextFree;
-        tail->cells[prevFree].nextFree = index;
-    }
-}
-
-TailIndex tail_insertChars(Tail *tail, const int length, TrieChar * string) {
-    TailIndex index = tail->cells[0].nextFree;
-
-    if (index == 0) {
-        index = tail->cellsSize;
-        tail_poolCheckCapacity(tail, index + 1);
-    }
-
-    tail->cells[0].nextFree = tail->cells[index].nextFree;
-
-    tail->cells[index].length = length;
-    tail->cells[index].chars = string;
-    tail->cells[index].nextFree = 0;
-
-    tail_print(tail);
-
-    return index;
-}
-
-TrieChar *tail_allocateChars(TrieIndex size) {
-    TrieChar *chars = malloc(sizeof(TrieChar) * size);
-    if (chars == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
-        exit(1);
-    }
-
-    return chars;
-}
 
 Trie* create_trie() {
     Tail *tail = create_tail();
@@ -399,7 +324,7 @@ void trie_insertBranch(
     TrieIndex newNodeBase = base;
     int tailCharsLength = needle->length - needleIndex - 1;
     if (tailCharsLength > 0) {
-        TrieChar *chars = tail_allocateChars(tailCharsLength);
+        TrieChar *chars = allocateTrieChars(tailCharsLength);
 
         int c = 0;
         int i = needleIndex + 1;
@@ -483,7 +408,7 @@ void trie_collisionInTail(
     TailIndex needleNodeBase = base;
     if ((needle->length - needleIndex - commonTailLength - 1) > 1) {
         int tailCharsLength = needle->length - needleIndex - commonTailLength - 2;
-        TrieChar *chars = tail_allocateChars(tailCharsLength);
+        TrieChar *chars = allocateTrieChars(tailCharsLength);
 
         int c = 0;
         int i = needleIndex + commonTailLength + 2;
@@ -503,7 +428,7 @@ void trie_collisionInTail(
     TailIndex tailNodeBase = base;
     if (commonTailLength + 1 < tailCell.length) {
         int tailCharsLength = tailCell.length - commonTailLength - 1;
-        TrieChar *chars = tail_allocateChars(tailCharsLength);
+        TrieChar *chars = allocateTrieChars(tailCharsLength);
 
         for (int i = commonTailLength + 1, c = 0; i < tailCell.length; i++, c++) {
             chars[c] = tailCell.chars[i];
