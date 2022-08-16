@@ -4,28 +4,28 @@
 
 const int TAIL_ALLOCATION_STEP = 2;
 
-Tail* create_tail() {
+Tail *create_tail() {
     Tail *tail = malloc(sizeof(Tail));
-
-    TailCell c0;
-    c0.nextFree = 0;
-    c0.length = 0;
-    c0.chars = NULL;
 
     tail->cellsSize = 1;
     tail->cells = malloc(sizeof(TailCell) * 1);
+    tail->cells[0] = (TailCell) {NULL, 0, 0};
 
     return tail;
+}
+
+void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex) {
+    for (TrieIndex i = fromIndex; i < toIndex; i++) {
+        tail->cells[i].chars = NULL;
+        tail->cells[i].length = 0;
+        tail->cells[i].nextFree = i + 1; // next empty cell
+    }
 }
 
 void tail_poolReallocate(Tail *tail, TailIndex newSize) {
     tail->cells = realloc(tail->cells, sizeof(TailCell) * newSize);
 
-    for (TrieIndex i = tail->cellsSize; i < newSize; i++) {
-        tail->cells[i].chars = NULL;
-        tail->cells[i].length = 0;
-        tail->cells[i].nextFree = i+1; // next empty cell
-    }
+    tail_poolConnectNextFree(tail, tail->cellsSize, newSize);
 
     tail->cells[tail->cellsSize - 1].nextFree = tail->cellsSize;
     tail->cells[newSize - 1].nextFree = 0;
@@ -61,7 +61,7 @@ void tail_freeCell(Tail *tail, TailIndex index) {
     }
 }
 
-TailIndex tail_insertChars(Tail *tail, const int length, TrieChar * string) {
+TailIndex tail_insertChars(Tail *tail, const int length, TrieChar *string) {
     TailIndex index = tail->cells[0].nextFree;
 
     if (index == 0) {
@@ -86,4 +86,20 @@ TrieChar *tail_allocateChars(TrieIndex size) {
     }
 
     return chars;
+}
+
+void tail_print(Tail *tail) {
+    for (int i = 0; i < tail->cellsSize; i++) {
+        TailCell cell = tail->cells[i];
+        printf("%d (%u): ", i, cell.nextFree);
+        if (cell.length > 0) {
+            for (int c = 0; c < cell.length; c++) {
+                printf("%d ", cell.chars[c]);
+            }
+        } else {
+            printf("empty");
+        }
+        printf("\n");
+    }
+    printf("\n\n");
 }

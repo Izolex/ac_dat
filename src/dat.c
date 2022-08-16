@@ -1,67 +1,51 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "unicode/utf8.h"
 #include "dat.h"
-#include "debug.h"
-#include "char_coding.h"
+#include "character.h"
 #include "tail.h"
-
-typedef unsigned char AlphabetSize;
 
 #define TRIE_END_OF_TEXT '\3'
 
 void trie_insertEndOfText(Trie *trie, TrieIndex check);
 
-TrieChar *allocateTrieChars(TrieIndex size) {
-    TrieChar *chars = malloc(sizeof(TrieChar) * size);
-    if (chars == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
-        exit(1);
-    }
-
-    return chars;
-}
-
-
 
 const int ALLOCATION_STEP = 2;
 const TrieIndex TRIE_POOL_INFO = 0;
 const TrieIndex TRIE_POOL_START = 1;
-const AlphabetSize AlphabetSizeMax = 255;
 
-typedef struct {
-    TrieChar chars[AlphabetSizeMax];
-    AlphabetSize count;
-} CharSet;
+void trie_print(Trie *trie) {
+    printf("\n");
+    for (int i = 0; i < trie->cellsSize; i++) {
+        printf("%4d | ", i);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->cellsSize; i++) {
+        printf("%4ld | ", trie->cells[i].base);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->cellsSize; i++) {
+        printf("%4ld | ", trie->cells[i].check);
+    }
+    printf("\n\n");
+    tail_print(trie->tail);
+}
 
-
-Trie* create_trie() {
+Trie *create_trie() {
     Tail *tail = create_tail();
     Trie *trie = malloc(sizeof(Trie));
-
-    Cell c0, c1, c2;
-
-    c0.base = -2;
-    c0.check = -2;
-
-    c1.base = 1; // TRIE_POOL_START
-    c1.check = 0;
-
-    c2.base = 0;
-    c2.check = 0;
 
     trie->tail = tail;
     trie->cellsSize = 3;
     trie->cells = malloc(sizeof(Cell) * trie->cellsSize);
-    trie->cells[0] = c0;
-    trie->cells[1] = c1;
-    trie->cells[2] = c2;
+    trie->cells[0] = (Cell) {-2, -2}; // TRIE_POOL_INFO
+    trie->cells[1] = (Cell) {1, 0}; // TRIE_POOL_START
+    trie->cells[2] = (Cell) {0, 0};
 
     return trie;
 }
 
-TrieBuilder* create_TrieBuilder() {
+TrieBuilder *create_TrieBuilder() {
     TrieBuilder *builder = malloc(sizeof(TrieBuilder));
     builder->trie = create_trie();
     return builder;
@@ -95,8 +79,8 @@ void trie_poolReallocate(Trie *trie, TrieIndex newSize) {
     trie->cells = realloc(trie->cells, sizeof(Cell) * newSize);
 
     for (TrieIndex i = trie->cellsSize; i < newSize; i++) {
-        trie->cells[i].base = -(i-1); // prev empty cell
-        trie->cells[i].check = -(i+1); // next empty cell
+        trie->cells[i].base = -(i - 1); // prev empty cell
+        trie->cells[i].check = -(i + 1); // next empty cell
     }
 
     trie->cells[-trie->cells[0].base].check = -trie->cellsSize; // old last (empty) cell now points to first newly added empty cell
@@ -153,22 +137,7 @@ void trie_insertNode(
     trie_setBase(trie, state, base);
 }
 
-CharSet *charSet_create() {
-    CharSet *ch = calloc(1, sizeof(CharSet));
-
-    if (ch == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for charset", sizeof(CharSet));
-        exit(1);
-    }
-
-    return ch;
-}
-
-void charSet_free(CharSet *charSet) {
-    free(charSet);
-}
-
-void charSet_fill(CharSet *charSet, Trie *trie, TrieIndex state) {
+void trie_fillCharSet(Trie *trie, TrieIndex state, CharSet *charSet) {
     TrieIndex base = trie_getBase(trie, state);
     AlphabetSize index = 0;
 
@@ -179,16 +148,6 @@ void charSet_fill(CharSet *charSet, Trie *trie, TrieIndex state) {
             index++;
         }
     }
-}
-
-void charSet_append(CharSet *charSet, TrieChar character) {
-    charSet->chars[charSet->count] = character;
-    charSet->count += 1;
-}
-
-void charSet_removeLast(CharSet *charSet) {
-    charSet->chars[charSet->count - 1] = 0;
-    charSet->count -= 1;
 }
 
 TrieIndex trie_findEmptyCell(
@@ -248,7 +207,7 @@ TrieIndex trie_moveBase(
             state = newCharIndex;
         }
 
-        charSet_fill(newCheckCharSet, trie, charIndex);
+        trie_fillCharSet(trie, charIndex, newCheckCharSet);
         for (AlphabetSize c2 = 0; c2 < newCheckCharSet->count; c2++) {
             trie_setCheck(trie, charBase + newCheckCharSet->chars[c2], newCharIndex);
         }
@@ -256,14 +215,13 @@ TrieIndex trie_moveBase(
         trie_freeCell(trie, charIndex);
         trie_insertNode(trie, newCharIndex, charBase, check);
 
-        memset(newCheckCharSet, 0, sizeof(CharSet));
+        charSet_reset(newCheckCharSet);
     }
 
     charSet_free(newCheckCharSet);
 
     return state;
 }
-
 
 TrieIndex trie_solveCollision(
         Trie *trie,
@@ -275,8 +233,8 @@ TrieIndex trie_solveCollision(
     CharSet *baseCharSet = charSet_create();
     CharSet *checkCharSet = charSet_create();
 
-    charSet_fill(baseCharSet, trie, lastState);
-    charSet_fill(checkCharSet, trie, trie_getCheck(trie, state));
+    trie_fillCharSet(trie, lastState, baseCharSet);
+    trie_fillCharSet(trie, trie_getCheck(trie, state), checkCharSet);
 
     TrieBase freeBase;
     TrieIndex newState, parentIndex;
@@ -342,10 +300,10 @@ void trie_insertBranch(
 }
 
 TrieIndex trie_insert(
-    Trie *trie,
-    TrieIndex lastState,
-    TrieBase base,
-    TrieChar character
+        Trie *trie,
+        TrieIndex lastState,
+        TrieBase base,
+        TrieChar character
 ) {
     TrieBase lastBase = trie_getBase(trie, lastState);
     TrieIndex newState = character + lastBase;
@@ -364,8 +322,8 @@ TrieIndex trie_insert(
 }
 
 void trie_insertEndOfText(
-    Trie *trie,
-    TrieIndex check
+        Trie *trie,
+        TrieIndex check
 ) {
     TrieBase base = trie_getBase(trie, check);
     trie_insert(trie, check, base, TRIE_END_OF_TEXT);
@@ -445,45 +403,6 @@ void trie_collisionInTail(
 
 
     tail_freeCell(trie->tail, tailIndex);
-}
-
-TrieNeedle *createNeedle(const char *needle) {
-    TrieNeedle *trieNeedle = calloc(1, sizeof(TrieNeedle));
-    if (trieNeedle == NULL) {
-        fprintf(stderr, "can not allocate memory for trie needle");
-        exit(1);
-    }
-
-    int index = 0;
-    while (needle[index] != '\0') {
-        int length = utf8Length(needle[index]);
-        if (length == 0) {
-            return NULL;
-        }
-        index += length;
-        trieNeedle->length++;
-    }
-
-    trieNeedle->characters = malloc(sizeof(TrieChar) * trieNeedle->length);
-
-    int needleIndex = 0;
-    for (int i = 0; i < trieNeedle->length; i++) {
-        int length = utf8Length(needle[needleIndex]);
-
-        char utf8Char[4];
-        for (int c = 0; c < length; c++) {
-            utf8Char[c] = needle[needleIndex + c];
-        }
-
-        if (!utf8validate(utf8Char)) {
-            return NULL;
-        }
-
-        trieNeedle->characters[i] = utf8toUnicode(utf8Char);
-        needleIndex += length;
-    }
-
-    return trieNeedle;
 }
 
 void trie_addNeedle(Trie *trie, TrieNeedle *needle) {
