@@ -6,11 +6,6 @@
 #include "character.h"
 #include "tail.h"
 
-#define TRIE_END_OF_TEXT '\3'
-
-const TrieIndex TRIE_POOL_INFO = 0;
-const TrieIndex TRIE_POOL_START = 1;
-
 void trie_print(Trie *trie) {
     printf("\n");
     for (int i = 0; i < trie->cellsSize; i++) {
@@ -23,6 +18,14 @@ void trie_print(Trie *trie) {
     printf("\n");
     for (int i = 0; i < trie->cellsSize; i++) {
         printf("%4ld | ", trie->cells[i].check);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->cellsSize; i++) {
+        printf("%4ld | ", trie->cells[i].fail);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->cellsSize; i++) {
+        printf("%4ld | ", trie->cells[i].shortcut);
     }
     printf("\n\n");
     tail_print(trie->tail);
@@ -75,12 +78,28 @@ TrieIndex trie_getCheck(Trie *trie, TrieIndex index) {
     return 0;
 }
 
+TrieIndex trie_getFail(Trie *trie, TrieIndex index) {
+    return trie->cells[index].fail ?: TRIE_POOL_START;
+}
+
+TrieIndex trie_getShortcut(Trie *trie, TrieIndex index) {
+    return trie->cells[index].shortcut;
+}
+
 void trie_setCheck(Trie *trie, TrieIndex index, TrieIndex value) {
     trie->cells[index].check = value;
 }
 
 void trie_setBase(Trie *trie, TrieIndex index, TrieBase value) {
     trie->cells[index].base = value;
+}
+
+void trie_setFail(Trie *trie, TrieIndex index, TrieBase value) {
+    trie->cells[index].fail = value;
+}
+
+void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value) {
+    trie->cells[index].shortcut = value;
 }
 
 void trie_poolReallocate(Trie *trie, TrieIndex newSize) {

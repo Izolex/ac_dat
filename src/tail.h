@@ -8,4 +8,6 @@ void tail_freeCell(Tail *tail, TailIndex index);
 TailIndex tail_insertChars(Tail *tail, long int length, TrieChar *string);
 void tail_print(Tail *tail);
 
+TailCell tail_getCell(Tail *tail, TailIndex index);
+
 #endif

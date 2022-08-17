@@ -17,7 +17,6 @@ utf8Mask *utf8MaskMap[] = {
         [4] = &(utf8Mask) {0b00000111, 0b11110000, 3},
 };
 
-
 unsigned char utf8Length(const char string) {
     for (char i = 1; i <= 4; i++) {
         utf8Mask *u = utf8MaskMap[i];

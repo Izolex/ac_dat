@@ -11,6 +11,12 @@ TrieIndex trie_findLastFilled(Trie *trie);
 TrieBase trie_getBase(Trie *trie, TrieIndex index);
 TrieIndex trie_getCheck(Trie *trie, TrieIndex index);
 
+TrieIndex trie_getFail(Trie *trie, TrieIndex index);
+void trie_setFail(Trie *trie, TrieIndex index, TrieBase value);
+
+TrieIndex trie_getShortcut(Trie *trie, TrieIndex index);
+void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value);
+
 void trie_print(Trie *trie);
 
 #endif

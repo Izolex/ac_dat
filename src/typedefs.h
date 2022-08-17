@@ -2,12 +2,15 @@
 #define __TYPEDEFS_H__
 
 #define MAX_ALPHABET_SIZE 144697 // Unicode 14.0.0
+#define TRIE_END_OF_TEXT '\3'
+#define TRIE_POOL_INFO 0
+#define TRIE_POOL_START 1
 
 typedef long int TrieIndex;
 typedef long int TrieBase;
 typedef long int TailIndex;
-typedef unsigned long int AlphabetSize;
-typedef unsigned long int TrieChar;
+typedef long int AlphabetSize;
+typedef long int TrieChar;
 
 typedef struct {
     TrieChar * characters;
