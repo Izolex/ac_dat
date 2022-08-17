@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "dat.h"
 
 void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex) {
@@ -12,6 +13,11 @@ void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex
 
 Tail *create_tail(long int size) {
     Tail *tail = malloc(sizeof(Tail));
+
+    if (size < 2) {
+        fprintf(stderr, "minimum initial tail size must be at least 2");
+        exit(1);
+    }
 
     tail->cellsSize = size;
     tail->cells = malloc(sizeof(TailCell) * tail->cellsSize);
@@ -54,12 +60,12 @@ void tail_freeCell(Tail *tail, TailIndex index) {
     }
 }
 
-TailIndex tail_insertChars(Tail *tail, const int length, TrieChar *string) {
+TailIndex tail_insertChars(Tail *tail, const long int length, TrieChar *string) {
     TailIndex index = tail->cells[0].nextFree;
 
     if (index == 0) {
         index = tail->cellsSize;
-        tail_poolReallocate(tail, tail->cellsSize + (tail->cellsSize / 2));
+        tail_poolReallocate(tail, index + (long int)ceill(((long double)tail->cellsSize / 2)));
     }
 
     tail->cells[0].nextFree = tail->cells[index].nextFree;
@@ -74,10 +80,10 @@ TailIndex tail_insertChars(Tail *tail, const int length, TrieChar *string) {
 void tail_print(Tail *tail) {
     for (int i = 0; i < tail->cellsSize; i++) {
         TailCell cell = tail->cells[i];
-        printf("%d (%u): ", i, cell.nextFree);
+        printf("%d (%ld): ", i, cell.nextFree);
         if (cell.length > 0) {
             for (int c = 0; c < cell.length; c++) {
-                printf("%d ", cell.chars[c]);
+                printf("%ld ", cell.chars[c]);
             }
         } else {
             printf("empty");

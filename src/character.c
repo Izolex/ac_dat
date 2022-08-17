@@ -4,9 +4,9 @@
 #include "character.h"
 
 typedef struct {
-    char mask;
-    char lead;
-    int bites;
+    unsigned char mask;
+    unsigned char lead;
+    unsigned char bites;
 } utf8Mask;
 
 utf8Mask *utf8MaskMap[] = {
@@ -18,8 +18,8 @@ utf8Mask *utf8MaskMap[] = {
 };
 
 
-int utf8Length(const char string) {
-    for (int i = 1; i <= 4; i++) {
+unsigned char utf8Length(const char string) {
+    for (char i = 1; i <= 4; i++) {
         utf8Mask *u = utf8MaskMap[i];
 
         if ((string & ~u->mask) == u->lead) {
@@ -30,13 +30,13 @@ int utf8Length(const char string) {
     return 0;
 }
 
-int utf8validate(const char *string) {
-    int length = utf8Length(string[0]);
+unsigned char utf8validate(const char *string) {
+    unsigned char length = utf8Length(string[0]);
     if (length == 0) {
         return 0;
     }
 
-    for (int i = 1; i < length; i++) {
+    for (unsigned char i = 1; i < length; i++) {
         if ((string[i] & ~utf8MaskMap[0]->mask) != utf8MaskMap[0]->lead) {
             return 0;
         }
@@ -46,13 +46,13 @@ int utf8validate(const char *string) {
 }
 
 TrieChar utf8toUnicode(const char string[4]) {
-    int length = utf8Length(string[0]);
-    int shift = utf8MaskMap[0]->bites * (length - 1);
+    unsigned char length = utf8Length(string[0]);
+    unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
 
     utf8Mask *u = utf8MaskMap[length];
     uint32_t unicode = (string[0] & u->mask) << shift;
 
-    for (int i = 1; i < length; i++) {
+    for (unsigned char i = 1; i < length; i++) {
         shift -= utf8MaskMap[0]->bites;
         unicode |= (string[i] & utf8MaskMap[0]->mask) << shift;
     }
@@ -68,7 +68,7 @@ TrieNeedle *createNeedle(const char *needle) {
         exit(1);
     }
 
-    int index = 0;
+    AlphabetSize index = 0;
     while (needle[index] != '\0') {
         int length = utf8Length(needle[index]);
         if (length == 0) {
@@ -80,12 +80,12 @@ TrieNeedle *createNeedle(const char *needle) {
 
     trieNeedle->characters = malloc(sizeof(TrieChar) * trieNeedle->length);
 
-    int needleIndex = 0;
-    for (int i = 0; i < trieNeedle->length; i++) {
-        int length = utf8Length(needle[needleIndex]);
+    AlphabetSize needleIndex = 0;
+    for (AlphabetSize i = 0; i < trieNeedle->length; i++) {
+        unsigned char length = utf8Length(needle[needleIndex]);
 
         char utf8Char[4];
-        for (int c = 0; c < length; c++) {
+        for (unsigned char c = 0; c < length; c++) {
             utf8Char[c] = needle[needleIndex + c];
         }
 
@@ -104,7 +104,7 @@ void trieNeedle_free(TrieNeedle *needle) {
     free(needle);
 }
 
-TrieChar *allocateTrieChars(AlphabetSize size) {
+TrieChar *allocateTrieChars(const AlphabetSize size) {
     TrieChar *chars = malloc(sizeof(TrieChar) * size);
     if (chars == NULL) {
         fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
