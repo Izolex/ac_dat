@@ -1,6 +1,8 @@
 #ifndef __TYPEDEFS_H__
 #define __TYPEDEFS_H__
 
+#define MAX_ALPHABET_SIZE 144697 // Unicode 14.0.0
+
 typedef long int TrieIndex;
 typedef long int TrieBase;
 typedef long int TailIndex;
@@ -13,7 +15,7 @@ typedef struct {
 } TrieNeedle;
 
 typedef struct {
-    TrieChar chars[144697]; // Unicode 14.0.0
+    TrieChar chars[MAX_ALPHABET_SIZE];
     AlphabetSize count;
 } CharSet;
 
@@ -32,6 +34,8 @@ typedef struct {
 typedef struct {
     TrieBase base;
     TrieIndex check;
+    TrieIndex fail;
+    TrieIndex shortcut;
 } TrieCell;
 
 typedef struct {

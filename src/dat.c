@@ -140,7 +140,7 @@ void trie_fillCharSet(Trie *trie, TrieIndex state, CharSet *charSet) {
     TrieIndex base = trie_getBase(trie, state);
     AlphabetSize index = 0;
 
-    for (TrieIndex c = 0; c < trie->cellsSize; c++) {
+    for (TrieIndex c = 0; c < MAX_ALPHABET_SIZE; c++) {
         if (trie_getCheck(trie, base + c) == state) {
             charSet->chars[index] = c;
             charSet->count += 1;
