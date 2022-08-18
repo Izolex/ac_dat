@@ -42,6 +42,11 @@ typedef struct {
 } TrieCell;
 
 typedef struct {
+    unsigned char useTail:1;
+} TrieOptions;
+
+typedef struct {
+    TrieOptions *options;
     TrieCell *cells;
     TrieIndex cellsSize;
     Tail *tail;

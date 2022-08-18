@@ -3,7 +3,8 @@
 
 #include "typedefs.h"
 
-Trie *create_trie(long int datSize, long int tailSize);
+TrieOptions *create_TrieOptions(unsigned char useTail);
+Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize);
 void trie_addNeedle(Trie *trie, TrieNeedle *needle);
 void trie_find(Trie *trie, TrieNeedle *needle);
 TrieIndex trie_findLastFilled(Trie *trie);

@@ -38,7 +38,19 @@ void trie_connectLinkedList(Trie *trie, TrieIndex fromIndex, TrieIndex toIndex) 
     }
 }
 
-Trie *create_trie(long int datSize, long int tailSize) {
+TrieOptions *create_TrieOptions(unsigned char useTail) {
+    TrieOptions *options = malloc(sizeof(TrieOptions));
+    if (options == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for trie options", sizeof(TrieOptions));
+        exit(1);
+    }
+
+    options->useTail = useTail;
+
+    return options;
+}
+
+Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize) {
     Tail *tail = create_tail(tailSize);
     Trie *trie = malloc(sizeof(Trie));
 
@@ -47,6 +59,7 @@ Trie *create_trie(long int datSize, long int tailSize) {
         exit(1);
     }
 
+    trie->options = options;
     trie->tail = tail;
     trie->cellsSize = datSize;
     trie->cells = malloc(sizeof(TrieCell) * trie->cellsSize);
@@ -435,11 +448,16 @@ void trie_addNeedle(Trie *trie, TrieNeedle *needle) {
         TrieIndex check = trie_getCheck(trie, newState);
 
         if (check <= 0) {
-            trie_insertBranch(trie, newState, 1, lastState, needle, i);
-            return;
+            if (trie->options->useTail) {
+                trie_insertBranch(trie, newState, 1, lastState, needle, i);
+                return;
+            } else {
+                trie_insertNode(trie, newState, 1, lastState);
+                lastState = newState;
+            }
         } else if (check != lastState) {
             lastState = trie_solveCollision(trie, lastState, newState, 1, character);
-        } else if (base < 0) {
+        } else if (base < 0 && trie->options->useTail) {
             trie_collisionInTail(trie, newState, lastState, needle, i);
             return;
         } else {
