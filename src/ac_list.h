@@ -9,6 +9,7 @@ typedef unsigned long int ListIndex;
 typedef struct {
     TrieIndex trieIndex;
     ListIndex next;
+    ListIndex prev;
 } ListCell;
 
 typedef struct {
