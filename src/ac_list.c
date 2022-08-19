@@ -91,6 +91,40 @@ void list_poolReallocate(List *list) {
     list->size = newSize;
 }
 
+void list_freeCell(List *list, ListIndex index) {
+    if (list_getFirstFree(list) == 0 && list_getLastFree(list) == 0) {
+        list_setFirstFree(list, index);
+        list_setLastFree(list, index);
+        list->cells[index].next = 0;
+        list->cells[index].prev = 0;
+    } else if (list_getFirstFree(list) > index) {
+        list->cells[index].next = list_getFirstFree(list);
+        list->cells[index].prev = 0;
+        if (list_getFirstFree(list) == list_getLastFree(list)) {
+            list_setLastFree(list, index);
+        }
+        list_setFirstFree(list, index);
+    } else if (list_getLastFree(list) < index) {
+        list->cells[index].prev = list_getLastFree(list);
+        list->cells[index].next = 0;
+        if (list_getFirstFree(list) == list_getLastFree(list)) {
+            list_setFirstFree(list, index);
+        }
+        list_setLastFree(list, index);
+    } else {
+        ListIndex nextFree = list_getFirstFree(list);
+        while (nextFree < index) {
+            nextFree = list->cells[nextFree].next;
+        }
+
+        list->cells[index].next = nextFree;
+        list->cells[index].prev = list->cells[nextFree].prev;
+
+        list->cells[list->cells[nextFree].prev].next = nextFree;
+        list->cells[nextFree].prev = index;
+    }
+}
+
 
 unsigned char list_queueIsEmpty(List *list) {
     return list->front == 0 && list->rear == 0;
@@ -133,39 +167,23 @@ TrieIndex list_dequeue(List *list) {
         list->rear = 0;
     }
 
-    if (list_getFirstFree(list) == 0 && list_getLastFree(list) == 0) {
-        list_setFirstFree(list, index);
-        list_setLastFree(list, index);
-        list->cells[index].next = 0;
-        list->cells[index].prev = 0;
-    } else if (list_getFirstFree(list) > index) {
-        list->cells[index].next = list_getFirstFree(list);
-        list->cells[index].prev = 0;
-        if (list_getFirstFree(list) == list_getLastFree(list)) {
-            list_setLastFree(list, index);
-        }
-        list_setFirstFree(list, index);
-    } else if (list_getLastFree(list) < index) {
-        list->cells[index].prev = list_getLastFree(list);
-        list->cells[index].next = 0;
-        if (list_getFirstFree(list) == list_getLastFree(list)) {
-            list_setFirstFree(list, index);
-        }
-        list_setLastFree(list, index);
-    } else {
-        ListIndex nextFree = list_getFirstFree(list);
-        while (nextFree < index) {
-            nextFree = list->cells[nextFree].next;
-        }
-
-        list->cells[index].next = nextFree;
-        list->cells[index].prev = list->cells[nextFree].prev;
-
-        list->cells[list->cells[nextFree].prev].next = nextFree;
-        list->cells[nextFree].prev = index;
-    }
+    list_freeCell(list, index);
 
     return trieIndex;
 }
 
+TrieIndex list_pop(List *list) {
+    ListIndex index = list->rear;
+    TrieIndex trieIndex = list->cells[index].trieIndex;
 
+    list->cells[index].trieIndex = 0;
+    list->rear = list->cells[index].prev;
+    list->cells[list->rear].next = 0;
+    if (index == list->front) {
+        list->front = 0;
+    }
+
+    list_freeCell(list, index);
+
+    return trieIndex;
+}
