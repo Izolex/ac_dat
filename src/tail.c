@@ -12,7 +12,11 @@ void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex
 }
 
 Tail *create_tail(long int size) {
-    Tail *tail = malloc(sizeof(Tail));
+    Tail *tail = calloc(1, sizeof(Tail));
+    if (tail == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for tail", sizeof(Tail));
+        exit(1);
+    }
 
     if (size < 2) {
         fprintf(stderr, "minimum initial tail size must be at least 2");
@@ -20,7 +24,11 @@ Tail *create_tail(long int size) {
     }
 
     tail->cellsSize = size;
-    tail->cells = malloc(sizeof(TailCell) * tail->cellsSize);
+    tail->cells = calloc(tail->cellsSize, sizeof(TailCell));
+    if (tail == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for tail cells", sizeof(TailCell) * tail->cellsSize);
+        exit(1);
+    }
 
     tail_poolConnectNextFree(tail, 0, tail->cellsSize);
 
@@ -29,6 +37,10 @@ Tail *create_tail(long int size) {
 
 void tail_poolReallocate(Tail *tail, TailIndex newSize) {
     tail->cells = realloc(tail->cells, sizeof(TailCell) * newSize);
+    if (tail->cells == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for tail cells", sizeof(TailCell) * newSize);
+        exit(1);
+    }
 
     tail_poolConnectNextFree(tail, tail->cellsSize, newSize);
 

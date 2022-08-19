@@ -39,7 +39,7 @@ void trie_connectLinkedList(Trie *trie, TrieIndex fromIndex, TrieIndex toIndex) 
 }
 
 TrieOptions *create_TrieOptions(unsigned char useTail) {
-    TrieOptions *options = malloc(sizeof(TrieOptions));
+    TrieOptions *options = calloc(1, sizeof(TrieOptions));
     if (options == NULL) {
         fprintf(stderr, "can not allocate %lu memory for trie options", sizeof(TrieOptions));
         exit(1);
@@ -52,7 +52,11 @@ TrieOptions *create_TrieOptions(unsigned char useTail) {
 
 Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize) {
     Tail *tail = create_tail(tailSize);
-    Trie *trie = malloc(sizeof(Trie));
+    Trie *trie = calloc(1, sizeof(Trie));
+    if (options == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for trie", sizeof(Trie));
+        exit(1);
+    }
 
     if (datSize < 4) {
         fprintf(stderr, "minimum initial DAT size must be at least 4");
@@ -62,7 +66,11 @@ Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize) {
     trie->options = options;
     trie->tail = tail;
     trie->cellsSize = datSize;
-    trie->cells = malloc(sizeof(TrieCell) * trie->cellsSize);
+    trie->cells = calloc(trie->cellsSize, sizeof(TrieCell));
+    if (options == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for trie cells", sizeof(TrieCell) * trie->cellsSize);
+        exit(1);
+    }
     trie->cells[0] = (TrieCell) {-2, -2}; // TRIE_POOL_INFO
     trie->cells[1] = (TrieCell) {1, 0}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3};
@@ -117,6 +125,10 @@ void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value) {
 
 void trie_poolReallocate(Trie *trie, TrieIndex newSize) {
     trie->cells = realloc(trie->cells, sizeof(TrieCell) * newSize);
+    if (trie->cells == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for trie cells", sizeof(TrieCell) * newSize);
+        exit(1);
+    }
 
     trie_connectLinkedList(trie, trie->cellsSize, newSize);
 

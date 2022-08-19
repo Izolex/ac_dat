@@ -77,7 +77,11 @@ TrieNeedle *createNeedle(const char *needle) {
         trieNeedle->length++;
     }
 
-    trieNeedle->characters = malloc(sizeof(TrieChar) * trieNeedle->length);
+    trieNeedle->characters = calloc(trieNeedle->length, sizeof(TrieChar));
+    if (trieNeedle->characters == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for needle chars", sizeof(TrieChar) * trieNeedle->length);
+        exit(1);
+    }
 
     AlphabetSize needleIndex = 0;
     for (AlphabetSize i = 0; i < trieNeedle->length; i++) {
@@ -104,7 +108,7 @@ void trieNeedle_free(TrieNeedle *needle) {
 }
 
 TrieChar *allocateTrieChars(const AlphabetSize size) {
-    TrieChar *chars = malloc(sizeof(TrieChar) * size);
+    TrieChar *chars = calloc(size, sizeof(TrieChar));
     if (chars == NULL) {
         fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
         exit(1);
@@ -116,7 +120,6 @@ TrieChar *allocateTrieChars(const AlphabetSize size) {
 
 CharSet *charSet_create() {
     CharSet *ch = calloc(1, sizeof(CharSet));
-
     if (ch == NULL) {
         fprintf(stderr, "can not allocate %lu memory for charset", sizeof(CharSet));
         exit(1);

@@ -57,7 +57,7 @@ void list_poolReallocate(List *list) {
     ListSize newSize = list->size + (long int)ceill(((long double)list->size / 2)) + 1;
     list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
     if (list->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * newSize);
+        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(ListCell) * newSize);
         exit(1);
     }
 
