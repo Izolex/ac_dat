@@ -3,147 +3,147 @@
 #include <math.h>
 #include "ac_list.h"
 
-QueueIndex queue_getFirstFree(Queue *queue) {
-    return queue->cells[0].next;
+ListIndex list_getFirstFree(List *list) {
+    return list->cells[0].next;
 }
 
-void queue_setFirstFree(Queue *queue, QueueIndex index) {
-    queue->cells[0].next = index;
+void list_setFirstFree(List *list, ListIndex index) {
+    list->cells[0].next = index;
 }
 
-void queue_print(Queue *queue) {
+void list_print(List *list) {
     printf("\n\n");
-    printf("FirstFree: %ld, front: %ld, rear: %ld", queue_getFirstFree(queue), queue->front, queue->rear);
+    printf("FirstFree: %ld, front: %ld, rear: %ld", list_getFirstFree(list), list->front, list->rear);
     printf("\n\n");
-    for (int i = 0; i < queue->size; i++) {
+    for (int i = 0; i < list->size; i++) {
         printf("%4d | ", i);
     }
     printf("\n");
-    for (int i = 0; i < queue->size; i++) {
-        printf("%4ld | ", queue->cells[i].trieIndex);
+    for (int i = 0; i < list->size; i++) {
+        printf("%4ld | ", list->cells[i].trieIndex);
     }
     printf("\n");
-    for (int i = 0; i < queue->size; i++) {
-        printf("%4ld | ", queue->cells[i].next);
+    for (int i = 0; i < list->size; i++) {
+        printf("%4ld | ", list->cells[i].next);
     }
     printf("\n\n");
 }
 
-void queue_connectList(Queue *queue, QueueIndex fromIndex, QueueIndex toIndex) {
-    for (QueueIndex i = fromIndex; i < toIndex; i++) {
-        queue->cells[i].next = i+1;
+void list_connectList(List *list, ListIndex fromIndex, ListIndex toIndex) {
+    for (ListIndex i = fromIndex; i < toIndex; i++) {
+        list->cells[i].next = i+1;
     }
 }
 
-Queue *create_Queue() {
-    Queue *queue = calloc(1, sizeof(Queue));
-    if (queue == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for queue", sizeof(Queue));
+List *create_List() {
+    List *list = calloc(1, sizeof(List));
+    if (list == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for list", sizeof(List));
         exit(1);
     }
 
-    queue->size = MAX_ALPHABET_SIZE;
-    queue->cells = malloc(sizeof(QueueCell) * queue->size);
-    if (queue->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for queue values", sizeof(TrieIndex) * queue->size);
+    list->size = MAX_ALPHABET_SIZE;
+    list->cells = malloc(sizeof(ListCell) * list->size);
+    if (list->cells == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * list->size);
         exit(1);
     }
 
-    queue_connectList(queue, 0, queue->size - 1);
+    list_connectList(list, 0, list->size - 1);
 
-    return queue;
+    return list;
 }
 
-void queue_poolReallocate(Queue *queue) {
-    QueueSize newSize = queue->size + (long int)ceill(((long double)queue->size / 2));
-    queue->cells = realloc(queue->cells, sizeof(QueueCell) * newSize);
-    if (queue->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for queue values", sizeof(TrieIndex) * newSize);
+void list_poolReallocate(List *list) {
+    ListSize newSize = list->size + (long int)ceill(((long double)list->size / 2));
+    list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
+    if (list->cells == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * newSize);
         exit(1);
     }
 
-    queue_connectList(queue, queue->size, newSize);
+    list_connectList(list, list->size, newSize);
 
-    if (queue_getFirstFree(queue) == 0) {
-        queue_setFirstFree(queue, queue->size);
+    if (list_getFirstFree(list) == 0) {
+        list_setFirstFree(list, list->size);
     } else {
-        QueueIndex prevEmpty = queue->size - 1;
-        while (prevEmpty != 0 && queue->cells[prevEmpty].trieIndex != 0) {
+        ListIndex prevEmpty = list->size - 1;
+        while (prevEmpty != 0 && list->cells[prevEmpty].trieIndex != 0) {
             prevEmpty--;
         }
 
-        queue->cells[prevEmpty].next = queue->size;
+        list->cells[prevEmpty].next = list->size;
     }
 
-    queue->size = newSize;
+    list->size = newSize;
 }
 
-QueueIndex queue_Enqueue(Queue *queue, TrieIndex value) {
-    QueueIndex firstFree = queue_getFirstFree(queue);
+ListIndex list_enqueue(List *list, TrieIndex value) {
+    ListIndex firstFree = list_getFirstFree(list);
     if (firstFree == 0) {
-        queue_poolReallocate(queue);
-        firstFree = queue_getFirstFree(queue);
+        list_poolReallocate(list);
+        firstFree = list_getFirstFree(list);
     }
-    QueueIndex newFirstFree = queue->cells[firstFree].next;
+    ListIndex newFirstFree = list->cells[firstFree].next;
 
-    queue->cells[firstFree].trieIndex = value;
-    queue->cells[firstFree].next = 0;
+    list->cells[firstFree].trieIndex = value;
+    list->cells[firstFree].next = 0;
 
-    if (queue->rear) {
-        queue->cells[queue->rear].next = firstFree;
+    if (list->rear) {
+        list->cells[list->rear].next = firstFree;
     }
-    if (!queue->front) {
-        queue->front = firstFree;
+    if (!list->front) {
+        list->front = firstFree;
     }
 
-    queue->rear = firstFree;
-    queue->cells[0].next = newFirstFree;
-    queue_setFirstFree(queue, newFirstFree);
+    list->rear = firstFree;
+    list->cells[0].next = newFirstFree;
+    list_setFirstFree(list, newFirstFree);
 
     return firstFree;
 }
 
-TrieIndex queue_Dequeue(Queue *queue) {
-    QueueIndex index = queue->front;
-    TrieIndex trieIndex = queue->cells[index].trieIndex;
+TrieIndex list_dequeue(List *list) {
+    ListIndex index = list->front;
+    TrieIndex trieIndex = list->cells[index].trieIndex;
 
-    queue->cells[index].trieIndex = 0;
-    queue->front = queue->cells[index].next;
+    list->cells[index].trieIndex = 0;
+    list->front = list->cells[index].next;
 
-    if (index == queue->rear) {
-        queue->rear = 0;
-        queue->cells[index].next = 0;
-        queue_setFirstFree(queue, index);
+    if (index == list->rear) {
+        list->rear = 0;
+        list->cells[index].next = 0;
+        list_setFirstFree(list, index);
         return trieIndex;
     }
 
-    QueueIndex firstFree = queue_getFirstFree(queue);
+    ListIndex firstFree = list_getFirstFree(list);
     if (firstFree == 0) {
-        queue_setFirstFree(queue, index);
+        list_setFirstFree(list, index);
     } else if (firstFree > index) {
-        queue->cells[index].next = firstFree;
-        queue_setFirstFree(queue, index);
+        list->cells[index].next = firstFree;
+        list_setFirstFree(list, index);
     } else {
-        QueueIndex prevEmpty = index;
+        ListIndex prevEmpty = index;
         while (prevEmpty != 0) {
-            if (queue->cells[prevEmpty].trieIndex == 0) {
+            if (list->cells[prevEmpty].trieIndex == 0) {
                 break;
             }
             prevEmpty--;
         }
 
 
-        queue->cells[index].next = queue->cells[prevEmpty].next;
-        queue->cells[prevEmpty].next = index;
+        list->cells[index].next = list->cells[prevEmpty].next;
+        list->cells[prevEmpty].next = index;
     }
 
     return trieIndex;
 }
 
-unsigned char queue_isEmpty(Queue *queue) {
-    return queue->front == 0 && queue->rear == 0;
+unsigned char list_queueIsEmpty(List *list) {
+    return list->front == 0 && list->rear == 0;
 }
 
-void queue_free(Queue *queue) {
-    free(queue);
+void list_free(List *list) {
+    free(list);
 }

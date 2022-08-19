@@ -23,7 +23,7 @@ TrieIndex step(Trie *trie, TrieIndex state, const TrieChar character) {
 }
 
 Trie *createAutomaton(Trie *trie) {
-    Queue *queue = create_Queue();
+    List *queue = create_List();
 
     TrieBase poolStartBase = trie_getBase(trie, TRIE_POOL_START);
 
@@ -31,12 +31,12 @@ Trie *createAutomaton(Trie *trie) {
         TrieIndex trieIndex = poolStartBase + i;
         if (trie_getCheck(trie, trieIndex) == TRIE_POOL_START) {
             trie_setFail(trie, trieIndex, TRIE_POOL_START);
-            queue_Enqueue(queue, trieIndex);
+            list_enqueue(queue, trieIndex);
         }
     }
 
-    while (!queue_isEmpty(queue)) {
-        TrieIndex check = queue_Dequeue(queue);
+    while (!list_queueIsEmpty(queue)) {
+        TrieIndex check = list_dequeue(queue);
         TrieIndex checkBase = trie_getBase(trie, check);
         TrieIndex checkFail = trie_getFail(trie, check);
 
@@ -55,12 +55,12 @@ Trie *createAutomaton(Trie *trie) {
                     trie_setShortcut(trie, state, ss);
                 }
 
-                queue_Enqueue(queue, state);
+                list_enqueue(queue, state);
             }
         }
     }
 
-    queue_free(queue);
+    list_free(queue);
 
     return trie;
 }

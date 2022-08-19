@@ -3,25 +3,25 @@
 
 #include "typedefs.h"
 
-typedef unsigned long int QueueSize;
-typedef unsigned long int QueueIndex;
+typedef unsigned long int ListSize;
+typedef unsigned long int ListIndex;
 
 typedef struct {
     TrieIndex trieIndex;
-    QueueIndex next;
-} QueueCell;
+    ListIndex next;
+} ListCell;
 
 typedef struct {
-    QueueCell *cells;
-    QueueSize size;
-    QueueIndex rear;
-    QueueIndex front;
-} Queue;
+    ListCell *cells;
+    ListSize size;
+    ListIndex rear;
+    ListIndex front;
+} List;
 
-Queue *create_Queue();
-void queue_free(Queue *queue);
-QueueIndex queue_Enqueue(Queue *queue, TrieIndex value);
-TrieIndex queue_Dequeue(Queue *queue);
-unsigned char queue_isEmpty(Queue *queue);
+List *create_List();
+void list_free(List *list);
+ListIndex list_enqueue(List *list, TrieIndex value);
+TrieIndex list_dequeue(List *list);
+unsigned char list_queueIsEmpty(List *list);
 
 #endif
