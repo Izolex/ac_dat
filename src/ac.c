@@ -31,12 +31,12 @@ Trie *createAutomaton(Trie *trie) {
         TrieIndex trieIndex = poolStartBase + i;
         if (trie_getCheck(trie, trieIndex) == TRIE_POOL_START) {
             trie_setFail(trie, trieIndex, TRIE_POOL_START);
-            list_enqueue(queue, trieIndex);
+            list_push(queue, trieIndex);
         }
     }
 
-    while (!list_queueIsEmpty(queue)) {
-        TrieIndex check = list_dequeue(queue);
+    while (!list_isEmpty(queue)) {
+        TrieIndex check = list_shift(queue);
         TrieIndex checkBase = trie_getBase(trie, check);
         TrieIndex checkFail = trie_getFail(trie, check);
 
@@ -55,7 +55,7 @@ Trie *createAutomaton(Trie *trie) {
                     trie_setShortcut(trie, state, ss);
                 }
 
-                list_enqueue(queue, state);
+                list_push(queue, state);
             }
         }
     }

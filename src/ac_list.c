@@ -19,24 +19,6 @@ void list_setLastFree(List *list, ListIndex index) {
     list->cells[0].prev = index;
 }
 
-void list_print(List *list) {
-    printf("\n\n");
-    printf("FirstFree: %ld, lastFree: %ld, front: %ld, rear: %ld", list_getFirstFree(list), list_getLastFree(list), list->front, list->rear);
-    printf("\n\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4d | ", i);
-    }
-    printf("\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].trieIndex);
-    }
-    printf("\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].next);
-    }
-    printf("\n\n");
-}
-
 void list_connectList(List *list, ListIndex fromIndex, ListIndex toIndex) {
     for (ListIndex i = fromIndex; i < toIndex; i++) {
         list->cells[i].next = i+1;
@@ -126,11 +108,12 @@ void list_freeCell(List *list, ListIndex index) {
 }
 
 
-unsigned char list_queueIsEmpty(List *list) {
+unsigned char list_isEmpty(List *list) {
     return list->front == 0 && list->rear == 0;
 }
 
-ListIndex list_enqueue(List *list, TrieIndex value) {
+
+ListIndex list_push(List *list, TrieIndex value) {
     ListIndex index = list_getFirstFree(list);
     if (index == 0) {
         list_poolReallocate(list);
@@ -156,7 +139,7 @@ ListIndex list_enqueue(List *list, TrieIndex value) {
     return index;
 }
 
-TrieIndex list_dequeue(List *list) {
+TrieIndex list_shift(List *list) {
     ListIndex index = list->front;
     TrieIndex trieIndex = list->cells[index].trieIndex;
 
@@ -186,4 +169,23 @@ TrieIndex list_pop(List *list) {
     list_freeCell(list, index);
 
     return trieIndex;
+}
+
+
+void list_print(List *list) {
+    printf("\n\n");
+    printf("FirstFree: %ld, lastFree: %ld, front: %ld, rear: %ld", list_getFirstFree(list), list_getLastFree(list), list->front, list->rear);
+    printf("\n\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%4d | ", i);
+    }
+    printf("\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%4ld | ", list->cells[i].trieIndex);
+    }
+    printf("\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%4ld | ", list->cells[i].next);
+    }
+    printf("\n\n");
 }

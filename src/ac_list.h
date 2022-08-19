@@ -21,8 +21,9 @@ typedef struct {
 
 List *create_List();
 void list_free(List *list);
-ListIndex list_enqueue(List *list, TrieIndex value);
-TrieIndex list_dequeue(List *list);
-unsigned char list_queueIsEmpty(List *list);
+TrieIndex list_pop(List *list);
+TrieIndex list_shift(List *list);
+ListIndex list_push(List *list, TrieIndex value);
+unsigned char list_isEmpty(List *list);
 
 #endif
