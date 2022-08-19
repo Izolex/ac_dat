@@ -3,8 +3,8 @@
 
 #include "typedefs.h"
 
-typedef unsigned long int ListSize;
-typedef unsigned long int ListIndex;
+typedef long int ListSize;
+typedef long int ListIndex;
 
 typedef struct {
     TrieIndex trieIndex;
@@ -25,5 +25,7 @@ TrieIndex list_pop(List *list);
 TrieIndex list_shift(List *list);
 ListIndex list_push(List *list, TrieIndex value);
 unsigned char list_isEmpty(List *list);
+
+void list_print(List *list);
 
 #endif

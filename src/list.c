@@ -38,29 +38,30 @@ List *create_List() {
     }
 
     list->size = MAX_ALPHABET_SIZE;
-    list->cells = malloc(sizeof(ListCell) * list->size);
+    list->cells = calloc(list->size, sizeof(ListCell));
     if (list->cells == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * list->size);
         exit(1);
     }
 
-    list_connectList(list, 0, list->size);
+    list_connectList(list, 1, list->size - 1);
 
-    list->cells[0].next = list->size;
-    list->cells[list->size].next = 0;
+    list->cells[0].next = 1;
+    list->cells[0].prev = list->size - 1;
+    list->cells[list->size - 1].prev = list->size - 2;
 
     return list;
 }
 
 void list_poolReallocate(List *list) {
-    ListSize newSize = list->size + (long int)ceill(((long double)list->size / 2));
+    ListSize newSize = list->size + (long int)ceill(((long double)list->size / 2)) + 1;
     list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
     if (list->cells == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * newSize);
         exit(1);
     }
 
-    list_connectList(list, list->size, newSize);
+    list_connectList(list, list->size, newSize - 1);
 
     if (list_getFirstFree(list) == 0) {
         list_setFirstFree(list, list->size);
@@ -68,9 +69,11 @@ void list_poolReallocate(List *list) {
         list->cells[list_getLastFree(list)].next = list->size;
     }
 
-    list_setLastFree(list, newSize);
-
+    list->cells[list->size].prev = list_getLastFree(list);
+    list->cells[newSize - 1].prev = newSize - 2;
     list->size = newSize;
+
+    list_setLastFree(list, newSize - 1);
 }
 
 void list_freeCell(List *list, ListIndex index) {
@@ -82,6 +85,7 @@ void list_freeCell(List *list, ListIndex index) {
     } else if (list_getFirstFree(list) > index) {
         list->cells[index].next = list_getFirstFree(list);
         list->cells[index].prev = 0;
+        list->cells[list_getFirstFree(list)].prev = index;
         if (list_getFirstFree(list) == list_getLastFree(list)) {
             list_setLastFree(list, index);
         }
@@ -89,6 +93,7 @@ void list_freeCell(List *list, ListIndex index) {
     } else if (list_getLastFree(list) < index) {
         list->cells[index].prev = list_getLastFree(list);
         list->cells[index].next = 0;
+        list->cells[list_getLastFree(list)].next = index;
         if (list_getFirstFree(list) == list_getLastFree(list)) {
             list_setFirstFree(list, index);
         }
@@ -102,7 +107,8 @@ void list_freeCell(List *list, ListIndex index) {
         list->cells[index].next = nextFree;
         list->cells[index].prev = list->cells[nextFree].prev;
 
-        list->cells[list->cells[nextFree].prev].next = nextFree;
+        ListIndex prev = list->cells[nextFree].prev;
+        list->cells[prev].next = nextFree;
         list->cells[nextFree].prev = index;
     }
 }
@@ -120,16 +126,23 @@ ListIndex list_push(List *list, TrieIndex value) {
         index = list_getFirstFree(list);
     }
 
-    if (list->rear) {
-        list->cells[list->rear].next = index;
-    }
-    if (!list->front) {
-        list->front = index;
-    }
-
     list_setFirstFree(list, list->cells[index].next);
     if (list_getLastFree(list) == index) {
         list_setLastFree(list, 0);
+    }
+
+    if (list->cells[index].next) {
+        list->cells[list->cells[index].next].prev = list->cells[index].prev;
+    }
+
+    if (list->rear) {
+        list->cells[list->rear].next = index;
+        list->cells[index].prev = list->rear;
+    } else {
+        list->cells[index].prev = 0;
+    }
+    if (!list->front) {
+        list->front = index;
     }
 
     list->rear = index;
@@ -140,12 +153,19 @@ ListIndex list_push(List *list, TrieIndex value) {
 }
 
 TrieIndex list_shift(List *list) {
+    if (list_isEmpty(list)) {
+        fprintf(stderr, "list is empty");
+        exit(1);
+    }
+
     ListIndex index = list->front;
     TrieIndex trieIndex = list->cells[index].trieIndex;
 
     list->cells[index].trieIndex = 0;
     list->front = list->cells[index].next;
-    list->cells[list->front].prev = 0;
+    if (list->front) {
+        list->cells[list->front].prev = 0;
+    }
     if (index == list->rear) {
         list->rear = 0;
     }
@@ -156,12 +176,19 @@ TrieIndex list_shift(List *list) {
 }
 
 TrieIndex list_pop(List *list) {
+    if (list_isEmpty(list)) {
+        fprintf(stderr, "list is empty");
+        exit(1);
+    }
+
     ListIndex index = list->rear;
     TrieIndex trieIndex = list->cells[index].trieIndex;
 
     list->cells[index].trieIndex = 0;
     list->rear = list->cells[index].prev;
-    list->cells[list->rear].next = 0;
+    if (list->rear) {
+        list->cells[list->rear].next = 0;
+    }
     if (index == list->front) {
         list->front = 0;
     }
@@ -186,6 +213,10 @@ void list_print(List *list) {
     printf("\n");
     for (int i = 0; i < list->size; i++) {
         printf("%4ld | ", list->cells[i].next);
+    }
+    printf("\n");
+    for (int i = 0; i < list->size; i++) {
+        printf("%4ld | ", list->cells[i].prev);
     }
     printf("\n\n");
 }
