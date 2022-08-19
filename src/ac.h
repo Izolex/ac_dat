@@ -3,7 +3,8 @@
 
 #include "typedefs.h"
 
-Trie *createAutomaton(Trie *trie);
+Trie *createAutomaton_DFS(Trie *trie);
+Trie *createAutomaton_BFS(Trie *trie);
 unsigned char search(Trie *trie, TrieNeedle *needle);
 
 #endif

@@ -4,7 +4,7 @@
 #include "dat.h"
 #include "tail.h"
 
-TrieIndex step(Trie *trie, TrieIndex state, const TrieChar character) {
+TrieIndex AC_step(Trie *trie, TrieIndex state, const TrieChar character) {
     TrieIndex trieIndex;
 
     trieIndex = trie_getBase(trie, state) + character;
@@ -22,47 +22,52 @@ TrieIndex step(Trie *trie, TrieIndex state, const TrieChar character) {
     return state;
 }
 
-Trie *createAutomaton(Trie *trie) {
-    List *queue = create_List();
+Trie *createAutomaton(Trie *trie, TrieIndex (*obtainNode)(List *list)) {
+    List *list = create_List();
 
-    TrieBase poolStartBase = trie_getBase(trie, TRIE_POOL_START);
+    TrieBase rootBase = trie_getBase(trie, TRIE_POOL_START);
 
     for (TrieChar i = 1; i <= MAX_ALPHABET_SIZE; i++) {
-        TrieIndex trieIndex = poolStartBase + i;
-        if (trie_getCheck(trie, trieIndex) == TRIE_POOL_START) {
-            trie_setFail(trie, trieIndex, TRIE_POOL_START);
-            list_push(queue, trieIndex);
+        TrieIndex state = rootBase + i;
+        if (trie_getCheck(trie, state) == TRIE_POOL_START) {
+            trie_setFail(trie, state, TRIE_POOL_START);
+            list_push(list, state);
         }
     }
 
-    while (!list_isEmpty(queue)) {
-        TrieIndex check = list_shift(queue);
-        TrieIndex checkBase = trie_getBase(trie, check);
+    while (!list_isEmpty(list)) {
+        TrieIndex check = obtainNode(list);
+        TrieBase checkBase = trie_getBase(trie, check);
         TrieIndex checkFail = trie_getFail(trie, check);
 
-        for (TrieChar i = 1; i <= MAX_ALPHABET_SIZE; i++) {
-            TrieIndex state = checkBase + i;
+        for (TrieChar character = 1; character <= MAX_ALPHABET_SIZE; character++) {
+            TrieIndex state = checkBase + character;
             if (trie_getCheck(trie, state) == check) {
-
-                TrieIndex next = step(trie, checkFail, i);
+                TrieIndex next = AC_step(trie, checkFail, character);
 
                 trie_setFail(trie, state, next);
 
                 if (trie_getBase(trie, trie_getCheck(trie, next)) + TRIE_END_OF_TEXT == next) {
                     trie_setShortcut(trie, state, next);
                 } else {
-                    TrieIndex ss = trie_getShortcut(trie, next);
-                    trie_setShortcut(trie, state, ss);
+                    trie_setShortcut(trie, state, trie_getShortcut(trie, next));
                 }
 
-                list_push(queue, state);
+                list_push(list, state);
             }
         }
     }
 
-    list_free(queue);
-
+    list_free(list);
     return trie;
+}
+
+Trie *createAutomaton_DFS(Trie *trie) {
+    return createAutomaton(trie, list_pop);
+}
+
+Trie *createAutomaton_BFS(Trie *trie) {
+    return createAutomaton(trie, list_shift);
 }
 
 unsigned char isTail(Trie *trie, TrieNeedle *needle, AlphabetSize needleIndex, TailIndex tailIndex) {
