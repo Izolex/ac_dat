@@ -23,7 +23,7 @@ TrieIndex AC_step(Trie *trie, TrieIndex state, const TrieChar character) {
 }
 
 Trie *createAutomaton(Trie *trie, TrieIndex (*obtainNode)(List *list)) {
-    List *list = create_List();
+    List *list = create_List(MAX_ALPHABET_SIZE);
 
     TrieBase rootBase = trie_getBase(trie, TRIE_POOL_START);
 

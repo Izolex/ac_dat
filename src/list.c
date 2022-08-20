@@ -30,14 +30,14 @@ void list_free(List *list) {
     free(list);
 }
 
-List *create_List() {
+List *create_List(const AlphabetSize initialSize) {
     List *list = calloc(1, sizeof(List));
     if (list == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list", sizeof(List));
         exit(1);
     }
 
-    list->size = MAX_ALPHABET_SIZE;
+    list->size = initialSize;
     list->cells = calloc(list->size, sizeof(ListCell));
     if (list->cells == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * list->size);
@@ -108,7 +108,7 @@ void list_freeCell(List *list, ListIndex index) {
         list->cells[index].prev = list->cells[nextFree].prev;
 
         ListIndex prev = list->cells[nextFree].prev;
-        list->cells[prev].next = nextFree;
+        list->cells[prev].next = index;
         list->cells[nextFree].prev = index;
     }
 }
@@ -196,6 +196,42 @@ TrieIndex list_pop(List *list) {
     list_freeCell(list, index);
 
     return trieIndex;
+}
+
+ListIndex list_search(List *list, TrieIndex value) {
+    if (list->front == 0) {
+        return 0;
+    }
+
+    TrieIndex index = list->front;
+    while (index != value && index != 0) {
+        index = list->cells[index].next;
+    }
+
+    return index;
+}
+
+void list_delete(List *list, ListIndex index) {
+    if (list->front == index) {
+        list->front = list->cells[index].next;
+        if (list->front) {
+            list->cells[list->front].prev = 0;
+        }
+    } else {
+        list->cells[list->cells[index].prev].next = list->cells[index].next;
+    }
+    if (list->rear == index) {
+        list->rear = list->cells[index].prev;
+        if (list->rear) {
+            list->cells[list->rear].next = 0;
+        }
+    } else {
+        list->cells[list->cells[index].next].prev = list->cells[index].prev;
+    }
+
+    list->cells[index].trieIndex = 0;
+
+    list_freeCell(list, index);
 }
 
 
