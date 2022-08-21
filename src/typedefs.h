@@ -15,11 +15,6 @@ typedef long int TrieChar;
 typedef long int ListSize;
 typedef long int ListIndex;
 
-typedef enum {
-    FALSE = 0,
-    TRUE = 1
-} Bool;
-
 typedef struct {
     TrieIndex trieIndex;
     ListIndex next;
@@ -36,7 +31,7 @@ typedef struct {
 typedef struct {
     TrieChar * characters;
     AlphabetSize length;
-} TrieNeedle;
+} Needle;
 
 typedef struct {
     TrieChar chars[MAX_ALPHABET_SIZE];

@@ -3,8 +3,8 @@
 
 #include "typedefs.h"
 
-TrieNeedle *createNeedle(const char *needle);
-void trieNeedle_free(TrieNeedle *needle);
+Needle *createNeedle(const char *needle);
+void needle_free(Needle *needle);
 TrieChar *allocateTrieChars(AlphabetSize size);
 
 CharSet *charSet_create();

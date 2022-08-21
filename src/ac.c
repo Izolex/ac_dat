@@ -7,7 +7,7 @@
 static void AC_fillRoot(Trie *trie, List *list);
 static TrieIndex AC_step(Trie *trie, TrieIndex state, TrieChar character);
 static Trie *createAutomaton(Trie *trie, TrieIndex (*obtainNode)(List *list));
-static Bool isTail(const Trie *trie, const TrieNeedle *needle, AlphabetSize needleIndex, TailIndex tailIndex);
+static unsigned char isTail(const Trie *trie, const Needle *needle, AlphabetSize needleIndex, TailIndex tailIndex);
 
 
 static void AC_fillRoot(Trie *trie, List *list) {
@@ -89,7 +89,7 @@ Trie *createAutomaton_BFS(Trie *trie) {
     return createAutomaton(trie, list_shift);
 }
 
-static Bool isTail(const Trie *trie, const TrieNeedle *needle, const AlphabetSize needleIndex, const TailIndex tailIndex) {
+static unsigned char isTail(const Trie *trie, const Needle *needle, const AlphabetSize needleIndex, const TailIndex tailIndex) {
     TailCell tailCell = tail_getCell(trie->tail, tailIndex);
 
     AlphabetSize t = 0;
@@ -101,7 +101,7 @@ static Bool isTail(const Trie *trie, const TrieNeedle *needle, const AlphabetSiz
     return c == needle->length && t == tailCell.length;
 }
 
-Bool search(Trie *trie, const TrieNeedle *needle) {
+unsigned char search(Trie *trie, const Needle *needle) {
     TrieIndex state = TRIE_POOL_START;
     TrieIndex back;
     for (AlphabetSize i = 0; i < needle->length; i++) {
@@ -114,12 +114,12 @@ Bool search(Trie *trie, const TrieNeedle *needle) {
 
             if ((base < 0 && isTail(trie, needle, i, -base)) ||
                 trie_getCheck(trie, base + TRIE_END_OF_TEXT) == state) {
-                return TRUE;
+                return 1;
             }
 
             back = trie_getShortcut(trie, back);
         }
     }
 
-    return FALSE;
+    return 0;
 }

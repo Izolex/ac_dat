@@ -377,7 +377,7 @@ void trie_insertBranch(
         TrieIndex state,
         TrieBase base,
         TrieIndex check,
-        TrieNeedle *needle,
+        Needle *needle,
         long int needleIndex
 ) {
     TrieIndex newNodeBase = base;
@@ -404,7 +404,7 @@ void trie_collisionInTail(
         Trie *trie,
         TrieIndex state,
         TrieIndex check,
-        TrieNeedle *needle,
+        Needle *needle,
         long int needleIndex
 ) {
     TrieIndex tailIndex = -trie_getBase(trie, state);
@@ -476,7 +476,7 @@ void trie_collisionInTail(
     tail_freeCell(trie->tail, tailIndex);
 }
 
-void trie_addNeedle(Trie *trie, TrieNeedle *needle) {
+void trie_addNeedle(Trie *trie, Needle *needle) {
     TrieIndex lastState = TRIE_POOL_START;
 
     for (long int i = 0; i < needle->length; i++) {
@@ -508,7 +508,7 @@ void trie_addNeedle(Trie *trie, TrieNeedle *needle) {
     trie_insertEndOfText(trie, lastState);
 }
 
-void trie_find(Trie *trie, TrieNeedle *needle) {
+void trie_find(Trie *trie, Needle *needle) {
     TrieIndex state = TRIE_POOL_START;
 
     long int length = 0;

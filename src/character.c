@@ -60,8 +60,8 @@ TrieChar utf8toUnicode(const char string[4]) {
 }
 
 
-TrieNeedle *createNeedle(const char *needle) {
-    TrieNeedle *trieNeedle = calloc(1, sizeof(TrieNeedle));
+Needle *createNeedle(const char *needle) {
+    Needle *trieNeedle = calloc(1, sizeof(Needle));
     if (trieNeedle == NULL) {
         fprintf(stderr, "can not allocate memory for trie needle");
         exit(1);
@@ -103,7 +103,7 @@ TrieNeedle *createNeedle(const char *needle) {
     return trieNeedle;
 }
 
-void trieNeedle_free(TrieNeedle *needle) {
+void needle_free(Needle *needle) {
     free(needle);
 }
 
