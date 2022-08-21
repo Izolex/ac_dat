@@ -12,6 +12,27 @@ typedef long int TailIndex;
 typedef long int AlphabetSize;
 typedef long int TrieChar;
 
+typedef long int ListSize;
+typedef long int ListIndex;
+
+typedef enum {
+    FALSE = 0,
+    TRUE = 1
+} Bool;
+
+typedef struct {
+    TrieIndex trieIndex;
+    ListIndex next;
+    ListIndex prev;
+} ListCell;
+
+typedef struct {
+    ListCell *cells;
+    ListSize size;
+    ListIndex rear;
+    ListIndex front;
+} List;
+
 typedef struct {
     TrieChar * characters;
     AlphabetSize length;
@@ -39,6 +60,7 @@ typedef struct {
     TrieIndex check;
     TrieIndex fail;
     TrieIndex shortcut;
+    List *children;
 } TrieCell;
 
 typedef struct {

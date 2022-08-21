@@ -18,6 +18,8 @@ void trie_setFail(Trie *trie, TrieIndex index, TrieBase value);
 TrieIndex trie_getShortcut(Trie *trie, TrieIndex index);
 void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value);
 
+List *trie_getChildren(Trie *trie, TrieIndex index);
+
 void trie_print(Trie *trie);
 
 #endif

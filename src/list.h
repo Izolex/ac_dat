@@ -3,30 +3,24 @@
 
 #include "typedefs.h"
 
-typedef long int ListSize;
-typedef long int ListIndex;
-
-typedef struct {
-    TrieIndex trieIndex;
-    ListIndex next;
-    ListIndex prev;
-} ListCell;
-
-typedef struct {
-    ListCell *cells;
-    ListSize size;
-    ListIndex rear;
-    ListIndex front;
-} List;
-
 List *create_List(AlphabetSize initialSize);
 void list_free(List *list);
+void list_reset(List *list);
+
 TrieIndex list_pop(List *list);
 TrieIndex list_shift(List *list);
+TrieIndex list_getValue(const List *list, ListIndex index);
+
 ListIndex list_push(List *list, TrieIndex value);
-ListIndex list_search(List *list, TrieIndex value);
+ListIndex list_insert(List *list, TrieIndex value);
+ListIndex list_linearSearch(const List *list, TrieIndex value);
+ListIndex list_binarySearch(const List *list, TrieIndex value);
+ListIndex list_iterate(const List *list, ListIndex currentIndex);
+
+void list_mergeSort(List *list);
 void list_delete(List *list, ListIndex index);
-unsigned char list_isEmpty(List *list);
+
+unsigned char list_isEmpty(const List *list);
 
 void list_print(List *list);
 

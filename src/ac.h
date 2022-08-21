@@ -5,6 +5,6 @@
 
 Trie *createAutomaton_DFS(Trie *trie);
 Trie *createAutomaton_BFS(Trie *trie);
-unsigned char search(Trie *trie, TrieNeedle *needle);
+Bool search(Trie *trie, const TrieNeedle *needle);
 
 #endif
