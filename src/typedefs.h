@@ -2,7 +2,7 @@
 #define __TYPEDEFS_H__
 
 #define MAX_ALPHABET_SIZE 144697 // Unicode 14.0.0
-#define TRIE_END_OF_TEXT '\3'
+#define END_OF_TEXT '\3'
 #define TRIE_POOL_INFO 0
 #define TRIE_POOL_START 1
 
@@ -53,8 +53,6 @@ typedef struct {
 typedef struct {
     TrieBase base;
     TrieIndex check;
-    TrieIndex fail;
-    TrieIndex shortcut;
     List *children;
 } TrieCell;
 

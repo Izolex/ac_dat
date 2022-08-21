@@ -9,16 +9,10 @@ void trie_addNeedle(Trie *trie, Needle *needle);
 void trie_find(Trie *trie, Needle *needle);
 TrieIndex trie_findLastFilled(Trie *trie);
 
-TrieBase trie_getBase(Trie *trie, TrieIndex index);
-TrieIndex trie_getCheck(Trie *trie, TrieIndex index);
+TrieBase trie_getBase(const Trie *trie, TrieIndex index);
+TrieIndex trie_getCheck(const Trie *trie, TrieIndex index);
 
-TrieIndex trie_getFail(Trie *trie, TrieIndex index);
-void trie_setFail(Trie *trie, TrieIndex index, TrieBase value);
-
-TrieIndex trie_getShortcut(Trie *trie, TrieIndex index);
-void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value);
-
-List *trie_getChildren(Trie *trie, TrieIndex index);
+List *trie_getChildren(const Trie *trie, TrieIndex index);
 
 void trie_print(Trie *trie);
 

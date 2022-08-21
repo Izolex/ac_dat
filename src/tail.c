@@ -89,7 +89,7 @@ TailIndex tail_insertChars(Tail *tail, const long int length, TrieChar *string) 
     return index;
 }
 
-TailCell tail_getCell(Tail *tail, TailIndex index) {
+TailCell tail_getCell(const Tail *tail, const TailIndex index) {
     return tail->cells[index];
 }
 

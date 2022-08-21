@@ -75,7 +75,7 @@ Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize) {
         exit(1);
     }
     trie->cells[0] = (TrieCell) {-2, -2}; // TRIE_POOL_INFO
-    trie->cells[1] = (TrieCell) {1, 0, 0, 0, create_List(TRIE_CHILDREN_LIST_INIT_SIZE)}; // TRIE_POOL_START
+    trie->cells[1] = (TrieCell) {1, 0, create_List(TRIE_CHILDREN_LIST_INIT_SIZE)}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3};
 
     trie_connectLinkedList(trie, 3, trie->cellsSize);
@@ -86,7 +86,7 @@ Trie *create_trie(TrieOptions *options, long int datSize, long int tailSize) {
     return trie;
 }
 
-TrieBase trie_getBase(Trie *trie, TrieIndex index) {
+TrieBase trie_getBase(const Trie *trie, const TrieIndex index) {
     if (index < trie->cellsSize) {
         return trie->cells[index].base;
     }
@@ -94,7 +94,7 @@ TrieBase trie_getBase(Trie *trie, TrieIndex index) {
     return 0;
 }
 
-TrieIndex trie_getCheck(Trie *trie, TrieIndex index) {
+TrieIndex trie_getCheck(const Trie *trie, const TrieIndex index) {
     if (index < trie->cellsSize) {
         return trie->cells[index].check;
     }
@@ -102,35 +102,19 @@ TrieIndex trie_getCheck(Trie *trie, TrieIndex index) {
     return 0;
 }
 
-List *trie_getChildren(Trie *trie, TrieIndex index) {
+List *trie_getChildren(const Trie *trie, const TrieIndex index) {
     return trie->cells[index].children;
 }
 
-TrieIndex trie_getFail(Trie *trie, TrieIndex index) {
-    return trie->cells[index].fail ?: TRIE_POOL_START;
-}
-
-TrieIndex trie_getShortcut(Trie *trie, TrieIndex index) {
-    return trie->cells[index].shortcut;
-}
-
-void trie_setCheck(Trie *trie, TrieIndex index, TrieIndex value) {
+void trie_setCheck(Trie *trie, const TrieIndex index, const  TrieIndex value) {
     trie->cells[index].check = value;
 }
 
-void trie_setBase(Trie *trie, TrieIndex index, TrieBase value) {
+void trie_setBase(Trie *trie, const TrieIndex index, const  TrieBase value) {
     trie->cells[index].base = value;
 }
 
-void trie_setFail(Trie *trie, TrieIndex index, TrieBase value) {
-    trie->cells[index].fail = value;
-}
-
-void trie_setShortcut(Trie *trie, TrieIndex index, TrieBase value) {
-    trie->cells[index].shortcut = value;
-}
-
-void trie_setChildren(Trie *trie, TrieIndex index, List *children) {
+void trie_setChildren(Trie *trie, const TrieIndex index, const List *children) {
     trie->cells[index].children = children;
 }
 
@@ -369,7 +353,7 @@ void trie_insertEndOfText(
         TrieIndex check
 ) {
     TrieBase base = trie_getBase(trie, check);
-    trie_insert(trie, check, base, TRIE_END_OF_TEXT);
+    trie_insert(trie, check, base, END_OF_TEXT);
 }
 
 void trie_insertBranch(
@@ -544,7 +528,7 @@ void trie_find(Trie *trie, Needle *needle) {
     }
 
     TrieBase base = trie_getBase(trie, state);
-    TrieIndex newState = base + TRIE_END_OF_TEXT;
+    TrieIndex newState = base + END_OF_TEXT;
     TrieIndex check = trie_getCheck(trie, newState);
 
     if (check != state) {
@@ -554,10 +538,10 @@ void trie_find(Trie *trie, Needle *needle) {
 }
 
 TrieIndex trie_findLastFilled(Trie *trie) {
-    TrieIndex state = -trie_getBase(trie, 0);
-    while (trie_getBase(trie, state) < 0) {
-        state--;
+    TrieIndex lastFilled = -trie_getBase(trie, 0);
+    while (trie_getCheck(trie, lastFilled) < 0) {
+        lastFilled--;
     }
 
-    return state;
+    return lastFilled;
 }
