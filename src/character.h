@@ -5,7 +5,7 @@
 
 Needle *createNeedle(const char *needle);
 void needle_free(Needle *needle);
-TrieChar *allocateTrieChars(AlphabetSize size);
+TrieChar *allocateTrieChars(size_t size);
 
 CharSet *charSet_create();
 void charSet_free(CharSet *charSet);

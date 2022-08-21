@@ -19,7 +19,7 @@ static AutomatonIndex automaton_getBase(const Automaton *automaton, AutomatonInd
 static AutomatonIndex automaton_getCheck(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getFail(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getShortcut(const Automaton *automaton, AutomatonIndex index);
-static unsigned char isTail(const Tail *tail, const Needle *needle, AlphabetSize needleIndex, TailIndex tailIndex);
+static unsigned char isTail(const Tail *tail, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
 
 
 static void automaton_setBase(Automaton *automaton, const AutomatonIndex index, const AutomatonIndex value) {
@@ -162,11 +162,11 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
     return buildAutomaton(trie, list, list_shift);
 }
 
-static unsigned char isTail(const Tail *tail, const Needle *needle, const AlphabetSize needleIndex, const TailIndex tailIndex) {
+static unsigned char isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
     TailCell tailCell = tail_getCell(tail, tailIndex);
 
-    AlphabetSize t = 0;
-    AlphabetSize c = needleIndex + 1;
+    TailCharIndex t = 0;
+    NeedleIndex c = needleIndex + 1;
     while (c < needle->length && t < tailCell.length && needle->characters[c] == tailCell.chars[t]) {
         c++, t++;
     }
@@ -177,7 +177,7 @@ static unsigned char isTail(const Tail *tail, const Needle *needle, const Alphab
 unsigned char automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
     TrieIndex state = TRIE_POOL_START;
 
-    for (AlphabetSize i = 0; i < needle->length; i++) {
+    for (NeedleIndex i = 0; i < needle->length; i++) {
         TrieChar character = needle->characters[i];
         TrieIndex back = state = automaton_step(automaton, state, character);
 

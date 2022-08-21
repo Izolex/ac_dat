@@ -67,7 +67,7 @@ Needle *createNeedle(const char *needle) {
         exit(1);
     }
 
-    AlphabetSize index = 0;
+    size_t index = 0;
     while (needle[index] != '\0') {
         int length = utf8Length(needle[index]);
         if (length == 0) {
@@ -83,8 +83,8 @@ Needle *createNeedle(const char *needle) {
         exit(1);
     }
 
-    AlphabetSize needleIndex = 0;
-    for (AlphabetSize i = 0; i < trieNeedle->length; i++) {
+    NeedleIndex needleIndex = 0;
+    for (size_t i = 0; i < trieNeedle->length; i++) {
         unsigned char length = utf8Length(needle[needleIndex]);
 
         char utf8Char[4];
@@ -107,7 +107,7 @@ void needle_free(Needle *needle) {
     free(needle);
 }
 
-TrieChar *allocateTrieChars(const AlphabetSize size) {
+TrieChar *allocateTrieChars(const size_t size) {
     TrieChar *chars = calloc(size, sizeof(TrieChar));
     if (chars == NULL) {
         fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);

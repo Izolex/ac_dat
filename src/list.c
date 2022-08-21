@@ -17,7 +17,7 @@ static ListIndex list_getFirstFree(const List *list) {
     return list->cells[0].next;
 }
 
-static void list_setFirstFree(List *list, ListIndex index) {
+static void list_setFirstFree(List *list, const ListIndex index) {
     list->cells[0].next = index;
 }
 
@@ -25,11 +25,11 @@ static ListIndex list_getLastFree(const List *list) {
     return list->cells[0].prev;
 }
 
-static void list_setLastFree(List *list, ListIndex index) {
+static void list_setLastFree(List *list, const ListIndex index) {
     list->cells[0].prev = index;
 }
 
-static void list_connectList(List *list, ListIndex fromIndex, ListIndex toIndex) {
+static void list_connectList(List *list, const ListIndex fromIndex, const ListIndex toIndex) {
     for (ListIndex i = fromIndex; i < toIndex; i++) {
         list->cells[i].next = i+1;
         list->cells[i].prev = i-1;
@@ -40,7 +40,7 @@ void list_free(List *list) {
     free(list);
 }
 
-List *create_List(const AlphabetSize initialSize) {
+List *create_List(const ListIndex initialSize) {
     List *list = calloc(1, sizeof(List));
     if (list == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list", sizeof(List));
@@ -64,7 +64,7 @@ List *create_List(const AlphabetSize initialSize) {
 }
 
 static void list_poolReallocate(List *list) {
-    ListSize newSize = list->size + (long int)ceill(((long double)list->size / 2)) + 1;
+    ListIndex newSize = list->size + (long int)ceill(((long double)list->size / 2)) + 1;
     list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
     if (list->cells == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list values", sizeof(ListCell) * newSize);
@@ -86,7 +86,7 @@ static void list_poolReallocate(List *list) {
     list_setLastFree(list, newSize - 1);
 }
 
-static void list_freeCell(List *list, ListIndex index) {
+static void list_freeCell(List *list, const ListIndex index) {
     if (list_getFirstFree(list) == 0 && list_getLastFree(list) == 0) {
         list_setFirstFree(list, index);
         list_setLastFree(list, index);
@@ -123,7 +123,7 @@ unsigned char list_isEmpty(const List *list) {
 }
 
 
-ListIndex list_push(List *list, TrieIndex value) {
+ListIndex list_push(List *list, const TrieIndex value) {
     ListIndex index = list_getFirstFree(list);
     if (index == 0) {
         list_poolReallocate(list);
@@ -160,7 +160,7 @@ ListIndex list_push(List *list, TrieIndex value) {
     return index;
 }
 
-ListIndex list_insert(List *list, TrieIndex value) {
+ListIndex list_insert(List *list, const TrieIndex value) {
     if (list->front == 0 && list->rear == 0 || list->cells[list->rear].trieIndex < value) {
         return list_push(list, value);
     }
@@ -254,7 +254,7 @@ TrieIndex list_pop(List *list) {
     return trieIndex;
 }
 
-ListIndex list_linearSearch(const List *list, TrieIndex value) {
+ListIndex list_linearSearch(const List *list, const TrieIndex value) {
     if (list->front == 0) {
         return 0;
     }
@@ -270,7 +270,7 @@ ListIndex list_linearSearch(const List *list, TrieIndex value) {
     return 0;
 }
 
-void list_delete(List *list, ListIndex index) {
+void list_delete(List *list, const ListIndex index) {
     if (list->front == index) {
         list->front = list->cells[index].next;
         if (list->front) {
@@ -320,11 +320,11 @@ ListIndex list_iterate(const List *list, const ListIndex currentIndex) {
     return list->cells[currentIndex].next;
 }
 
-TrieIndex list_getValue(const List *list, ListIndex index) {
+TrieIndex list_getValue(const List *list, const ListIndex index) {
     return list->cells[index].trieIndex;
 }
 
-static void list_mergeSort_merge(List *list, ListIndex left, ListIndex middle, ListIndex right) {
+static void list_mergeSort_merge(List *list, const ListIndex left, const ListIndex middle, const ListIndex right) {
     ListIndex leftSize = middle - left + 1, rightSize = right - middle;
     ListCell leftArray[leftSize], rightArray[rightSize];
 
@@ -411,7 +411,7 @@ void list_mergeSort(List *list) {
     }
 }
 
-ListIndex list_binarySearch(const List *list, TrieIndex value) {
+ListIndex list_binarySearch(const List *list, const TrieIndex value) {
     ListIndex from = 0, to = list->rear;
 
     while (from <= to) {

@@ -3,7 +3,7 @@
 
 #include "typedefs.h"
 
-List *create_List(AlphabetSize initialSize);
+List *create_List(ListIndex initialSize);
 void list_free(List *list);
 void list_reset(List *list);
 

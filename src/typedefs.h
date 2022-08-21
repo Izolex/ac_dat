@@ -12,8 +12,10 @@ typedef long int TailIndex;
 typedef long int AlphabetSize;
 typedef long int TrieChar;
 
-typedef long int ListSize;
 typedef long int ListIndex;
+
+typedef unsigned long TailCharIndex;
+typedef unsigned long NeedleIndex;
 
 typedef struct {
     TrieIndex trieIndex;
@@ -23,7 +25,7 @@ typedef struct {
 
 typedef struct {
     ListCell *cells;
-    ListSize size;
+    ListIndex size;
     ListIndex rear;
     ListIndex front;
 } List;
@@ -40,7 +42,7 @@ typedef struct {
 
 typedef struct {
     TrieChar *chars;
-    TrieIndex length;
+    size_t length;
     TailIndex nextFree;
 } TailCell;
 
