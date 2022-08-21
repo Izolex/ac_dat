@@ -13,6 +13,4 @@ TrieBase trie_getBase(const Trie *trie, TrieIndex index);
 TrieIndex trie_getCheck(const Trie *trie, TrieIndex index);
 List *trie_getChildren(const Trie *trie, TrieIndex index);
 
-void trie_print(Trie *trie);
-
 #endif

@@ -22,6 +22,4 @@ void list_delete(List *list, ListIndex index);
 
 unsigned char list_isEmpty(const List *list);
 
-void list_print(List *list);
-
 #endif

@@ -427,25 +427,3 @@ ListIndex list_binarySearch(const List *list, const TrieIndex value) {
 
     return 0;
 }
-
-void list_print(List *list) {
-    printf("\n\n");
-    printf("FirstFree: %ld, lastFree: %ld, front: %ld, rear: %ld", list_getFirstFree(list), list_getLastFree(list), list->front, list->rear);
-    printf("\n\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4d | ", i);
-    }
-    printf("\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].trieIndex);
-    }
-    printf("\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].next);
-    }
-    printf("\n");
-    for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].prev);
-    }
-    printf("\n\n");
-}

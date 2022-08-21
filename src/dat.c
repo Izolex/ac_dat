@@ -32,31 +32,6 @@ static TrieIndex trie_moveBase(Trie *trie, const CharSet *charSet, TrieBase oldB
 static TrieIndex trie_solveCollision(Trie *trie, TrieIndex state, TrieBase base, TrieIndex check, TrieChar character);
 
 
-void trie_print(Trie *trie) {
-    printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
-        printf("%4d | ", i);
-    }
-    printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
-        printf("%4ld | ", trie->cells[i].base);
-    }
-    printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
-        printf("%4ld | ", trie->cells[i].check);
-    }
-    printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
-        printf("%4ld | ", trie->cells[i].fail);
-    }
-    printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
-        printf("%4ld | ", trie->cells[i].shortcut);
-    }
-    printf("\n\n");
-    tail_print(trie->tail);
-}
-
 static void trie_connectLinkedList(Trie *trie, const TrieIndex fromIndex, const TrieIndex toIndex) {
     for (TrieIndex i = fromIndex; i < toIndex; i++) {
         trie->cells[i].base = -(i - 1);

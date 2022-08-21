@@ -97,19 +97,3 @@ TailIndex tail_insertChars(Tail *tail, const size_t length, TrieChar *string) {
 TailCell tail_getCell(const Tail *tail, const TailIndex index) {
     return tail->cells[index];
 }
-
-void tail_print(Tail *tail) {
-    for (int i = 0; i < tail->cellsSize; i++) {
-        TailCell cell = tail->cells[i];
-        printf("%d (%ld): ", i, cell.nextFree);
-        if (cell.length > 0) {
-            for (int c = 0; c < cell.length; c++) {
-                printf("%ld ", cell.chars[c]);
-            }
-        } else {
-            printf("empty");
-        }
-        printf("\n");
-    }
-    printf("\n\n");
-}
