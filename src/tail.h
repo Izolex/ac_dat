@@ -3,9 +3,12 @@
 
 #include "typedefs.h"
 
-Tail *create_tail(TailIndex size);
+Tail *createTail(TailIndex size);
+void tail_free(Tail *tail);
 void tail_freeCell(Tail *tail, TailIndex index);
-TailIndex tail_insertChars(Tail *tail, size_t length, TrieChar *string);
+void tail_minimize(Tail *tail);
+TailIndex tail_insertChars(Tail *tail, TailCharIndex length, TrieChar *string);
 TailCell tail_getCell(const Tail *tail, TailIndex index);
+TrieChar *allocateTrieChars(TailCharIndex size);
 
 #endif

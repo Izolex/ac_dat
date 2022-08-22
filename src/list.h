@@ -3,7 +3,7 @@
 
 #include "typedefs.h"
 
-List *create_List(ListIndex initialSize);
+List *createList(ListIndex initialSize);
 void list_free(List *list);
 void list_reset(List *list);
 
@@ -16,8 +16,10 @@ ListIndex list_insert(List *list, TrieIndex value);
 ListIndex list_linearSearch(const List *list, TrieIndex value);
 ListIndex list_binarySearch(const List *list, TrieIndex value);
 ListIndex list_iterate(const List *list, ListIndex currentIndex);
+ListIndex list_getRear(const List *list);
 
 void list_mergeSort(List *list);
+void list_remove(List *list, ListIndex index);
 void list_delete(List *list, ListIndex index);
 
 bool list_isEmpty(const List *list);

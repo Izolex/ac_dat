@@ -6,7 +6,22 @@
 
 static void tail_poolReallocate(Tail *tail, TailIndex newSize);
 static void tail_poolConnectNextFree(Tail *tail, TailIndex fromIndex, TailIndex toIndex);
+static void trieChars_free(TrieChar *chars);
 
+
+TrieChar *allocateTrieChars(const TailCharIndex size) {
+    TrieChar *chars = calloc(size, sizeof(TrieChar));
+    if (chars == NULL) {
+        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
+        exit(1);
+    }
+
+    return chars;
+}
+
+static void trieChars_free(TrieChar *chars) {
+    free(chars);
+}
 
 static void tail_poolConnectNextFree(Tail *tail, const TailIndex fromIndex, const TailIndex toIndex) {
     for (TrieIndex i = fromIndex; i < toIndex; i++) {
@@ -16,7 +31,7 @@ static void tail_poolConnectNextFree(Tail *tail, const TailIndex fromIndex, cons
     }
 }
 
-Tail *create_tail(const TailIndex size) {
+Tail *createTail(const TailIndex size) {
     Tail *tail = calloc(1, sizeof(Tail));
     if (tail == NULL) {
         fprintf(stderr, "can not allocate %lu memory for tail", sizeof(Tail));
@@ -38,6 +53,16 @@ Tail *create_tail(const TailIndex size) {
     tail_poolConnectNextFree(tail, 0, tail->cellsSize);
 
     return tail;
+}
+
+void tail_free(Tail *tail) {
+    for (TailIndex i = 1; i < tail->cellsSize; i++) {
+        if (tail->cells[i].chars != NULL) {
+            trieChars_free(tail->cells[i].chars);
+        }
+    }
+    free(tail->cells);
+    free(tail);
 }
 
 void tail_poolReallocate(Tail *tail, const TailIndex newSize) {
@@ -77,12 +102,12 @@ void tail_freeCell(Tail *tail, const TailIndex index) {
     }
 }
 
-TailIndex tail_insertChars(Tail *tail, const size_t length, TrieChar *string) {
+TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, TrieChar *string) {
     TailIndex index = tail->cells[0].nextFree;
 
     if (index == 0) {
         index = tail->cellsSize;
-        tail_poolReallocate(tail, index + (long int)ceill(((long double)tail->cellsSize / 2)));
+        tail_poolReallocate(tail, index + (TailIndex)ceill(((long double)tail->cellsSize / 2)));
     }
 
     tail->cells[0].nextFree = tail->cells[index].nextFree;
@@ -96,4 +121,15 @@ TailIndex tail_insertChars(Tail *tail, const size_t length, TrieChar *string) {
 
 TailCell tail_getCell(const Tail *tail, const TailIndex index) {
     return tail->cells[index];
+}
+
+void tail_minimize(Tail *tail) {
+    TailIndex lastFilled = tail->cellsSize - 1;
+    while (tail->cells[lastFilled].chars == NULL && lastFilled > 1) {
+        lastFilled--;
+    }
+
+    TailIndex newSize = lastFilled + 1;
+    tail->cellsSize = newSize;
+    tail->cells = safeRealloc(tail->cells, newSize, sizeof(TailCell), "Tail cells");
 }

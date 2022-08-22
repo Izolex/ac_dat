@@ -3,12 +3,14 @@
 #include <math.h>
 #include "list.h"
 
+
 static ListIndex list_getFirstFree(const List *list);
 static ListIndex list_getLastFree(const List *list);
 static void list_setFirstFree(List *list, ListIndex index);
 static void list_setLastFree(List *list, ListIndex index);
 static void list_connectList(List *list, ListIndex fromIndex, ListIndex toIndex);
 static void list_poolReallocate(List *list);
+static void list_ensureNotEmpty(List *list);
 static void list_freeCell(List *list, ListIndex index);
 static void list_mergeSort_merge(List *list, ListIndex left, ListIndex middle, ListIndex right);
 
@@ -37,10 +39,11 @@ static void list_connectList(List *list, const ListIndex fromIndex, const ListIn
 }
 
 void list_free(List *list) {
+    free(list->cells);
     free(list);
 }
 
-List *create_List(const ListIndex initialSize) {
+List *createList(const ListIndex initialSize) {
     List *list = calloc(1, sizeof(List));
     if (list == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list", sizeof(List));
@@ -64,7 +67,7 @@ List *create_List(const ListIndex initialSize) {
 }
 
 static void list_poolReallocate(List *list) {
-    ListIndex newSize = list->size + (long int)ceill(((long double)list->size / 2)) + 1;
+    ListIndex newSize = list->size + (ListIndex)ceill(((long double)list->size / 2)) + 1;
     list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
     if (list->cells == NULL) {
         fprintf(stderr, "can not allocate %lu memory for list values", sizeof(ListCell) * newSize);
@@ -208,11 +211,15 @@ ListIndex list_insert(List *list, const TrieIndex value) {
     return from;
 }
 
-TrieIndex list_shift(List *list) {
+static void list_ensureNotEmpty(List *list) {
     if (list_isEmpty(list)) {
         fprintf(stderr, "list is empty");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
+}
+
+TrieIndex list_shift(List *list) {
+    list_ensureNotEmpty(list);
 
     ListIndex index = list->front;
     TrieIndex trieIndex = list->cells[index].trieIndex;
@@ -232,10 +239,7 @@ TrieIndex list_shift(List *list) {
 }
 
 TrieIndex list_pop(List *list) {
-    if (list_isEmpty(list)) {
-        fprintf(stderr, "list is empty");
-        exit(1);
-    }
+    list_ensureNotEmpty(list);
 
     ListIndex index = list->rear;
     TrieIndex trieIndex = list->cells[index].trieIndex;
@@ -270,7 +274,8 @@ ListIndex list_linearSearch(const List *list, const TrieIndex value) {
     return 0;
 }
 
-void list_delete(List *list, const ListIndex index) {
+// for non sorted list
+void list_remove(List *list, const ListIndex index) {
     if (list->front == index) {
         list->front = list->cells[index].next;
         if (list->front) {
@@ -294,6 +299,33 @@ void list_delete(List *list, const ListIndex index) {
 
     list->cells[index].trieIndex = 0;
     list_freeCell(list, index);
+}
+
+// keeps list sorted
+void list_delete(List *list, const ListIndex index) {
+    if (list->rear == index) {
+        list_remove(list, index);
+        return;
+    }
+
+    for (ListIndex i = index + 1; i <= list->rear; i++) {
+        list->cells[i - 1].trieIndex = list->cells[i].trieIndex;
+    }
+
+    if (list->rear + 1 <= list->size - 1) {
+        list->cells[list->rear].next = list->rear + 1;
+        list->cells[list->rear + 1].prev = list->rear;
+        list_setFirstFree(list, list->rear);
+    } else {
+        list->cells[list->rear].next = 0;
+        list_setFirstFree(list, 0);
+    }
+
+    list->cells[list->rear].trieIndex = 0;
+    list->cells[list->rear].prev = 0;
+    list->cells[list->rear - 1].next = 0;
+
+    list->rear--;
 }
 
 void list_reset(List *list) {
@@ -412,18 +444,25 @@ void list_mergeSort(List *list) {
 }
 
 ListIndex list_binarySearch(const List *list, const TrieIndex value) {
-    ListIndex from = 0, to = list->rear;
+    ListIndex from = 0;
+    ListIndex to = list->rear;
 
     while (from <= to) {
-        ListIndex middle = (from + to) / 2;
+        ListIndex middle = from + ((to - from) / 2);
         if (value == list->cells[middle].trieIndex) {
             return middle;
         } else if (value > list->cells[middle].trieIndex) {
             from = middle + 1;
+        } else if (middle == 0) {
+            return 0;
         } else {
             to = middle - 1;
         }
     }
 
     return 0;
+}
+
+ListIndex list_getRear(const List *list) {
+    return list->rear;
 }

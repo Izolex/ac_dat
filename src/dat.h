@@ -3,8 +3,11 @@
 
 #include "typedefs.h"
 
-TrieOptions *create_TrieOptions(bool useTail);
-Trie *create_trie(TrieOptions *options, TrieIndex datSize, TailIndex tailSize);
+TrieOptions *createTrieOptions(bool useTail);
+void trieOptions_free(TrieOptions *options);
+
+Trie *createTrie(TrieOptions *options, Tail *tail, TrieIndex);
+void trie_free(Trie *trie);
 
 void trie_addNeedle(Trie *trie, const Needle *needle);
 void trie_find(Trie *trie, Needle *needle);

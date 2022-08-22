@@ -1,18 +1,17 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "character.h"
 
 
-static unsigned char utf8Length(char string);
-static bool utf8validate(const char *string);
-static TrieChar utf8toUnicode(const char string[4]);
+static char utf8Length(unsigned char byte);
+static bool utf8validate(const unsigned char *string, size_t stringLength);
+static TrieChar utf8toUnicode(const unsigned char string[4]);
 
 
 typedef struct {
     unsigned char mask;
     unsigned char lead;
-    unsigned char bites;
+    char bites;
 } utf8Mask;
 
 utf8Mask *utf8MaskMap[] = {
@@ -24,11 +23,9 @@ utf8Mask *utf8MaskMap[] = {
 };
 
 
-static unsigned char utf8Length(const char string) {
+static char utf8Length(const unsigned char byte) {
     for (char i = 1; i <= 4; i++) {
-        utf8Mask *u = utf8MaskMap[i];
-
-        if ((string & ~u->mask) == u->lead) {
+        if ((byte & ~utf8MaskMap[i]->mask) == utf8MaskMap[i]->lead) {
             return i;
         }
     }
@@ -36,14 +33,10 @@ static unsigned char utf8Length(const char string) {
     return 0;
 }
 
-static bool utf8validate(const char *string) {
-    unsigned char length = utf8Length(string[0]);
-    if (length == 0) {
-        return false;
-    }
-
-    for (unsigned char i = 1; i < length; i++) {
-        if ((string[i] & ~utf8MaskMap[0]->mask) != utf8MaskMap[0]->lead) {
+static bool utf8validate(const unsigned char *string, const size_t length) {
+    const utf8Mask *u8mask = utf8MaskMap[0];
+    for (char i = 1; i < length; i++) {
+        if ((string[i] & ~u8mask->mask) != u8mask->lead) {
             return false;
         }
     }
@@ -51,14 +44,13 @@ static bool utf8validate(const char *string) {
     return true;
 }
 
-static TrieChar utf8toUnicode(const char string[4]) {
-    unsigned char length = utf8Length(string[0]);
+static TrieChar utf8toUnicode(const unsigned char string[4]) {
+    const char length = utf8Length(string[0]);
     unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
 
-    utf8Mask *u = utf8MaskMap[length];
-    uint32_t unicode = (string[0] & u->mask) << shift;
+    uint32_t unicode = (string[0] & utf8MaskMap[length]->mask) << shift;
 
-    for (unsigned char i = 1; i < length; i++) {
+    for (char i = 1; i < length; i++) {
         shift -= utf8MaskMap[0]->bites;
         unicode |= (string[i] & utf8MaskMap[0]->mask) << shift;
     }
@@ -73,10 +65,11 @@ Needle *createNeedle(const char *needle) {
         fprintf(stderr, "can not allocate memory for trie needle");
         exit(1);
     }
+    size_t index;
 
-    size_t index = 0;
+    index = 0;
     while (needle[index] != '\0') {
-        int length = utf8Length(needle[index]);
+        const char length = utf8Length((unsigned char)needle[index]);
         if (length == 0) {
             return NULL;
         }
@@ -90,21 +83,21 @@ Needle *createNeedle(const char *needle) {
         exit(1);
     }
 
-    NeedleIndex needleIndex = 0;
-    for (size_t i = 0; i < trieNeedle->length; i++) {
-        unsigned char length = utf8Length(needle[needleIndex]);
+    index = 0;
+    for (NeedleIndex i = 0; i < trieNeedle->length; i++) {
+        const char length = utf8Length((unsigned char)needle[index]);
 
-        char utf8Char[4];
-        for (unsigned char c = 0; c < length; c++) {
-            utf8Char[c] = needle[needleIndex + c];
+        unsigned char utf8Char[4] = {0,0,0,0};
+        for (char c = 0; c < length; c++) {
+            utf8Char[c] = (unsigned char)needle[index + c];
         }
 
-        if (!utf8validate(utf8Char)) {
+        if (!utf8validate(utf8Char, length)) {
             return NULL;
         }
 
         trieNeedle->characters[i] = utf8toUnicode(utf8Char);
-        needleIndex += length;
+        index += length;
     }
 
     return trieNeedle;
@@ -112,43 +105,4 @@ Needle *createNeedle(const char *needle) {
 
 void needle_free(Needle *needle) {
     free(needle);
-}
-
-TrieChar *allocateTrieChars(const size_t size) {
-    TrieChar *chars = calloc(size, sizeof(TrieChar));
-    if (chars == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
-        exit(1);
-    }
-
-    return chars;
-}
-
-
-CharSet *charSet_create() {
-    CharSet *ch = calloc(1, sizeof(CharSet));
-    if (ch == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for charset", sizeof(CharSet));
-        exit(1);
-    }
-
-    return ch;
-}
-
-void charSet_free(CharSet *charSet) {
-    free(charSet);
-}
-
-void charSet_reset(CharSet *charSet) {
-    memset(charSet, 0, sizeof(CharSet));
-}
-
-void charSet_append(CharSet *charSet, const TrieChar character) {
-    charSet->chars[charSet->count] = character;
-    charSet->count += 1;
-}
-
-void charSet_removeLast(CharSet *charSet) {
-    charSet->chars[charSet->count - 1] = 0;
-    charSet->count -= 1;
 }

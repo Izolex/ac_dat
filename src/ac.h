@@ -20,6 +20,8 @@ typedef struct {
 
 Automaton *createAutomaton_DFS(const Trie *trie, List *list);
 Automaton *createAutomaton_BFS(const Trie *trie, List *list);
+
+void automaton_free(Automaton *automaton);
 bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle);
 
 #endif

@@ -6,6 +6,7 @@
 #include "dat.h"
 #include "tail.h"
 
+
 static Automaton *createAutomaton(AutomatonIndex initialSize);
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list);
 static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtainNode)(List *list));
@@ -57,8 +58,8 @@ static AutomatonIndex automaton_getShortcut(const Automaton *automaton, const Au
 
 
 static void automaton_copyCell(Automaton *automaton, const Trie *trie, const TrieIndex trieIndex) {
-    automaton_setBase(automaton, trieIndex, trie_getBase(trie, trieIndex));
-    automaton_setCheck(automaton, trieIndex, trie_getCheck(trie, trieIndex));
+    automaton_setBase(automaton, (AutomatonIndex)trieIndex, (AutomatonIndex)trie_getBase(trie, trieIndex));
+    automaton_setCheck(automaton, (AutomatonIndex)trieIndex, (AutomatonIndex)trie_getCheck(trie, trieIndex));
 }
 
 static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex state, const AutomatonTransition transition) {
@@ -78,7 +79,12 @@ static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex 
     return state;
 }
 
-static Automaton *createAutomaton(AutomatonIndex initialSize) {
+void automaton_free(Automaton *automaton) {
+    free(automaton->cells);
+    free(automaton);
+}
+
+static Automaton *createAutomaton(const AutomatonIndex initialSize) {
     Automaton *automaton = calloc(1, sizeof(Automaton));
     if (automaton == NULL) {
         fprintf(stderr, "can not allocate %lu memory for automaton", sizeof(Automaton));
@@ -97,11 +103,11 @@ static Automaton *createAutomaton(AutomatonIndex initialSize) {
 
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list) {
     TrieIndex lastFilled = -trie_getBase(trie, 0);
-    while (trie_getCheck(trie, lastFilled) < 0) {
+    while (trie_getCheck(trie, lastFilled) <= 0) {
         lastFilled--;
     }
 
-    Automaton *automaton = createAutomaton(lastFilled);
+    Automaton *automaton = createAutomaton(lastFilled + 1);
 
     automaton_copyCell(automaton, trie, TRIE_POOL_START);
 
