@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include "dat.h"
-#include "character.h"
+#include "memory.h"
 #include "tail.h"
 #include "list.h"
 
@@ -40,11 +39,7 @@ static void trie_poolInit(Trie *trie, const TrieIndex fromIndex, const TrieIndex
 }
 
 TrieOptions *createTrieOptions(const bool useTail) {
-    TrieOptions *options = calloc(1, sizeof(TrieOptions));
-    if (options == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for trie options", sizeof(TrieOptions));
-        exit(1);
-    }
+    TrieOptions *options = safeCalloc(1, sizeof(TrieOptions), "TrieOptions");
 
     options->useTail = useTail;
 
@@ -57,11 +52,7 @@ void trieOptions_free(TrieOptions *options) {
 }
 
 Trie *createTrie(TrieOptions *options, Tail *tail, const TrieIndex initialSize) {
-    Trie *trie = calloc(1, sizeof(Trie));
-    if (options == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for trie", sizeof(Trie));
-        exit(1);
-    }
+    Trie *trie = safeCalloc(1, sizeof(Trie), "Trie");
 
     if (initialSize < 4) {
         fprintf(stderr, "minimum initial DAT size must be at least 4");
@@ -71,11 +62,7 @@ Trie *createTrie(TrieOptions *options, Tail *tail, const TrieIndex initialSize) 
     trie->options = options;
     trie->tail = tail;
     trie->cellsSize = initialSize;
-    trie->cells = calloc(trie->cellsSize, sizeof(TrieCell));
-    if (options == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for trie cells", sizeof(TrieCell) * trie->cellsSize);
-        exit(1);
-    }
+    trie->cells = safeCalloc(trie->cellsSize, sizeof(TrieCell), "Trie cells");
     trie->cells[0] = (TrieCell) {-2, -2, NULL}; // TRIE_POOL_INFO
     trie->cells[1] = (TrieCell) {1, 0, createList(TRIE_CHILDREN_LIST_INIT_SIZE)}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3, NULL};
@@ -97,6 +84,7 @@ void trie_free(Trie *trie) {
     }
     free(trie->cells);
     free(trie);
+    trie = NULL;
 }
 
 TrieBase trie_getBase(const Trie *trie, const TrieIndex index) {
@@ -132,11 +120,7 @@ static void trie_setChildren(Trie *trie, const TrieIndex index, List *children) 
 }
 
 static void trie_poolReallocate(Trie *trie, const TrieIndex newSize) {
-    trie->cells = realloc(trie->cells, sizeof(TrieCell) * newSize);
-    if (trie->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for trie cells", sizeof(TrieCell) * newSize);
-        exit(1);
-    }
+    trie->cells = safeRealloc(trie->cells, newSize, sizeof(TrieCell), "Trie");
 
     trie_poolInit(trie, trie->cellsSize, newSize);
 
@@ -149,7 +133,7 @@ static void trie_poolReallocate(Trie *trie, const TrieIndex newSize) {
 
 static void trie_poolCheckCapacity(Trie *trie, const TrieIndex index) {
     if (trie->cellsSize <= index + 1) {
-        trie_poolReallocate(trie, index + (long int)ceill((long double)trie->cellsSize / 2));
+        trie_poolReallocate(trie, (TrieIndex)calculateAllocation(index));
     }
 }
 

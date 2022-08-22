@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include "list.h"
+#include "memory.h"
 
 
 static ListIndex list_getFirstFree(const List *list);
@@ -41,21 +41,14 @@ static void list_connectList(List *list, const ListIndex fromIndex, const ListIn
 void list_free(List *list) {
     free(list->cells);
     free(list);
+    list = NULL;
 }
 
 List *createList(const ListIndex initialSize) {
-    List *list = calloc(1, sizeof(List));
-    if (list == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for list", sizeof(List));
-        exit(1);
-    }
+    List *list = safeCalloc(1, sizeof(List), "List");
 
     list->size = initialSize;
-    list->cells = calloc(list->size, sizeof(ListCell));
-    if (list->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(TrieIndex) * list->size);
-        exit(1);
-    }
+    list->cells = safeCalloc(list->size, sizeof(ListCell), "List cells");
 
     list_connectList(list, 1, list->size - 1);
 
@@ -67,12 +60,8 @@ List *createList(const ListIndex initialSize) {
 }
 
 static void list_poolReallocate(List *list) {
-    ListIndex newSize = list->size + (ListIndex)ceill(((long double)list->size / 2)) + 1;
-    list->cells = realloc(list->cells, sizeof(ListCell) * newSize);
-    if (list->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for list values", sizeof(ListCell) * newSize);
-        exit(1);
-    }
+    ListIndex newSize = calculateAllocation(list->size);
+    list->cells = safeRealloc(list->cells, newSize, sizeof(ListCell), "List cells");
 
     list_connectList(list, list->size, newSize - 1);
 

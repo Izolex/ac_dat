@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "character.h"
+#include "memory.h"
 
 
 static char utf8Length(unsigned char byte);
@@ -60,11 +61,7 @@ static TrieChar utf8toUnicode(const unsigned char string[4]) {
 
 
 Needle *createNeedle(const char *needle) {
-    Needle *trieNeedle = calloc(1, sizeof(Needle));
-    if (trieNeedle == NULL) {
-        fprintf(stderr, "can not allocate memory for trie needle");
-        exit(1);
-    }
+    Needle *trieNeedle = safeCalloc(1, sizeof(Needle), "needle");
     size_t index;
 
     index = 0;
@@ -77,11 +74,7 @@ Needle *createNeedle(const char *needle) {
         trieNeedle->length++;
     }
 
-    trieNeedle->characters = calloc(trieNeedle->length, sizeof(TrieChar));
-    if (trieNeedle->characters == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for needle chars", sizeof(TrieChar) * trieNeedle->length);
-        exit(1);
-    }
+    trieNeedle->characters = safeCalloc(trieNeedle->length, sizeof(TrieChar), "needle characters");
 
     index = 0;
     for (NeedleIndex i = 0; i < trieNeedle->length; i++) {
@@ -104,5 +97,7 @@ Needle *createNeedle(const char *needle) {
 }
 
 void needle_free(Needle *needle) {
+    free(needle->characters);
     free(needle);
+    needle = NULL;
 }

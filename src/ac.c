@@ -5,6 +5,7 @@
 #include "list.h"
 #include "dat.h"
 #include "tail.h"
+#include "memory.h"
 
 
 static Automaton *createAutomaton(AutomatonIndex initialSize);
@@ -82,21 +83,14 @@ static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex 
 void automaton_free(Automaton *automaton) {
     free(automaton->cells);
     free(automaton);
+    automaton = NULL;
 }
 
 static Automaton *createAutomaton(const AutomatonIndex initialSize) {
-    Automaton *automaton = calloc(1, sizeof(Automaton));
-    if (automaton == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for automaton", sizeof(Automaton));
-        exit(1);
-    }
+    Automaton *automaton = safeCalloc(1, sizeof(Automaton), "AC automaton");
 
     automaton->size = initialSize;
-    automaton->cells = calloc(initialSize, sizeof(AutomatonCell));
-    if (automaton->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for automaton cells", sizeof(Automaton) * initialSize);
-        exit(1);
-    }
+    automaton->cells = safeCalloc(initialSize, sizeof(AutomatonCell), "AC automaton cells");
 
     return automaton;
 }

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include "dat.h"
+#include "memory.h"
 
 
 static void tail_poolReallocate(Tail *tail, TailIndex newSize);
@@ -10,17 +10,12 @@ static void trieChars_free(TrieChar *chars);
 
 
 TrieChar *allocateTrieChars(const TailCharIndex size) {
-    TrieChar *chars = calloc(size, sizeof(TrieChar));
-    if (chars == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail chars", sizeof(TrieChar) * size);
-        exit(1);
-    }
-
-    return chars;
+    return safeCalloc(size, sizeof(TrieChar), "Tail characters");
 }
 
 static void trieChars_free(TrieChar *chars) {
     free(chars);
+    chars = NULL;
 }
 
 static void tail_poolConnectNextFree(Tail *tail, const TailIndex fromIndex, const TailIndex toIndex) {
@@ -32,11 +27,7 @@ static void tail_poolConnectNextFree(Tail *tail, const TailIndex fromIndex, cons
 }
 
 Tail *createTail(const TailIndex size) {
-    Tail *tail = calloc(1, sizeof(Tail));
-    if (tail == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail", sizeof(Tail));
-        exit(1);
-    }
+    Tail *tail = safeCalloc(1, sizeof(Tail), "Tail");
 
     if (size < 2) {
         fprintf(stderr, "minimum initial tail size must be at least 2");
@@ -44,11 +35,7 @@ Tail *createTail(const TailIndex size) {
     }
 
     tail->cellsSize = size;
-    tail->cells = calloc(tail->cellsSize, sizeof(TailCell));
-    if (tail == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail cells", sizeof(TailCell) * tail->cellsSize);
-        exit(1);
-    }
+    tail->cells = safeCalloc(tail->cellsSize, sizeof(TailCell), "Tail cells");
 
     tail_poolConnectNextFree(tail, 0, tail->cellsSize);
 
@@ -63,14 +50,11 @@ void tail_free(Tail *tail) {
     }
     free(tail->cells);
     free(tail);
+    tail = NULL;
 }
 
 void tail_poolReallocate(Tail *tail, const TailIndex newSize) {
-    tail->cells = realloc(tail->cells, sizeof(TailCell) * newSize);
-    if (tail->cells == NULL) {
-        fprintf(stderr, "can not allocate %lu memory for tail cells", sizeof(TailCell) * newSize);
-        exit(1);
-    }
+    tail->cells = safeRealloc(tail->cells, newSize, sizeof(TailCell), "Tail cells");
 
     tail_poolConnectNextFree(tail, tail->cellsSize, newSize);
 
@@ -107,7 +91,7 @@ TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, TrieChar *str
 
     if (index == 0) {
         index = tail->cellsSize;
-        tail_poolReallocate(tail, index + (TailIndex)ceill(((long double)tail->cellsSize / 2)));
+        tail_poolReallocate(tail, (TailIndex)calculateAllocation(tail->cellsSize));
     }
 
     tail->cells[0].nextFree = tail->cells[index].nextFree;
