@@ -19,7 +19,7 @@ static AutomatonIndex automaton_getBase(const Automaton *automaton, AutomatonInd
 static AutomatonIndex automaton_getCheck(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getFail(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getShortcut(const Automaton *automaton, AutomatonIndex index);
-static unsigned char isTail(const Tail *tail, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
+static bool isTail(const Tail *tail, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
 
 
 static void automaton_setBase(Automaton *automaton, const AutomatonIndex index, const AutomatonIndex value) {
@@ -162,7 +162,7 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
     return buildAutomaton(trie, list, list_shift);
 }
 
-static unsigned char isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
+static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
     TailCell tailCell = tail_getCell(tail, tailIndex);
 
     TailCharIndex t = 0;
@@ -174,7 +174,7 @@ static unsigned char isTail(const Tail *tail, const Needle *needle, const Needle
     return c == needle->length && t == tailCell.length;
 }
 
-unsigned char automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
+bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
     TrieIndex state = TRIE_POOL_START;
 
     for (NeedleIndex i = 0; i < needle->length; i++) {
@@ -186,12 +186,12 @@ unsigned char automaton_search(const Automaton *automaton, const Tail *tail, con
 
             if ((base < 0 && isTail(tail, needle, i, -base)) ||
                 automaton_getCheck(automaton, base + END_OF_TEXT) == state) {
-                return 1;
+                return true;
             }
 
             back = automaton_getShortcut(automaton, back);
         }
     }
 
-    return 0;
+    return false;
 }

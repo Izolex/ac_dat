@@ -39,7 +39,7 @@ static void trie_connectLinkedList(Trie *trie, const TrieIndex fromIndex, const 
     }
 }
 
-TrieOptions *create_TrieOptions(const unsigned char useTail) {
+TrieOptions *create_TrieOptions(const bool useTail) {
     TrieOptions *options = calloc(1, sizeof(TrieOptions));
     if (options == NULL) {
         fprintf(stderr, "can not allocate %lu memory for trie options", sizeof(TrieOptions));
@@ -393,18 +393,18 @@ static void trie_collisionInTail(
     TrieIndex tailIndex = -trie_getBase(trie, state);
     TailCell tailCell = trie->tail->cells[tailIndex];
 
-    unsigned char areSame = 1;
+    bool areSame = true;
     size_t commonTailLength = 0;
     for (NeedleIndex i = needleIndex + 1; i < needle->length; i++) {
         if (commonTailLength < tailCell.length && tailCell.chars[commonTailLength] == needle->characters[i]) {
             commonTailLength++;
         } else {
-            areSame = 0;
+            areSame = false;
             break;
         }
     }
 
-    if (areSame == 1) {
+    if (areSame == true) {
         return;
     }
 

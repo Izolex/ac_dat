@@ -20,6 +20,6 @@ ListIndex list_iterate(const List *list, ListIndex currentIndex);
 void list_mergeSort(List *list);
 void list_delete(List *list, ListIndex index);
 
-unsigned char list_isEmpty(const List *list);
+bool list_isEmpty(const List *list);
 
 #endif

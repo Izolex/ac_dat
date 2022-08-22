@@ -118,7 +118,7 @@ static void list_freeCell(List *list, const ListIndex index) {
 }
 
 
-unsigned char list_isEmpty(const List *list) {
+bool list_isEmpty(const List *list) {
     return list->front == 0 && list->rear == 0;
 }
 

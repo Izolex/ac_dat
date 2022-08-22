@@ -1,6 +1,10 @@
 #ifndef __TYPEDEFS_H__
 #define __TYPEDEFS_H__
 
+
+#include <stdbool.h>
+
+
 #define MAX_ALPHABET_SIZE 144697 // Unicode 14.0.0
 #define END_OF_TEXT '\3'
 #define TRIE_POOL_INFO 0
@@ -16,6 +20,7 @@ typedef long int ListIndex;
 
 typedef unsigned long TailCharIndex;
 typedef unsigned long NeedleIndex;
+
 
 typedef struct {
     TrieIndex trieIndex;
@@ -59,7 +64,7 @@ typedef struct {
 } TrieCell;
 
 typedef struct {
-    unsigned char useTail:1;
+    bool useTail:1;
 } TrieOptions;
 
 typedef struct {

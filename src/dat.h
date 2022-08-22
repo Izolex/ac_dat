@@ -3,7 +3,7 @@
 
 #include "typedefs.h"
 
-TrieOptions *create_TrieOptions(unsigned char useTail);
+TrieOptions *create_TrieOptions(bool useTail);
 Trie *create_trie(TrieOptions *options, TrieIndex datSize, TailIndex tailSize);
 
 void trie_addNeedle(Trie *trie, const Needle *needle);

@@ -3,6 +3,12 @@
 #include <string.h>
 #include "character.h"
 
+
+static unsigned char utf8Length(char string);
+static bool utf8validate(const char *string);
+static TrieChar utf8toUnicode(const char string[4]);
+
+
 typedef struct {
     unsigned char mask;
     unsigned char lead;
@@ -17,7 +23,8 @@ utf8Mask *utf8MaskMap[] = {
         [4] = &(utf8Mask) {0b00000111, 0b11110000, 3},
 };
 
-unsigned char utf8Length(const char string) {
+
+static unsigned char utf8Length(const char string) {
     for (char i = 1; i <= 4; i++) {
         utf8Mask *u = utf8MaskMap[i];
 
@@ -29,22 +36,22 @@ unsigned char utf8Length(const char string) {
     return 0;
 }
 
-unsigned char utf8validate(const char *string) {
+static bool utf8validate(const char *string) {
     unsigned char length = utf8Length(string[0]);
     if (length == 0) {
-        return 0;
+        return false;
     }
 
     for (unsigned char i = 1; i < length; i++) {
         if ((string[i] & ~utf8MaskMap[0]->mask) != utf8MaskMap[0]->lead) {
-            return 0;
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
-TrieChar utf8toUnicode(const char string[4]) {
+static TrieChar utf8toUnicode(const char string[4]) {
     unsigned char length = utf8Length(string[0]);
     unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
 
