@@ -75,7 +75,7 @@ void automaton_print(const Automaton *automaton) {
     }
     printf("\n");
     for (int i = 0; i < automaton->size; i++) {
-        printf("%4ld | ", automaton->cells[i].shortcut);
+        printf("%4ld | ", automaton->cells[i].output);
     }
     printf("\n\n");
 }

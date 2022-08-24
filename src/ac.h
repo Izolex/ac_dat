@@ -10,7 +10,7 @@ typedef struct {
     AutomatonIndex base;
     AutomatonIndex check;
     AutomatonIndex fail;
-    AutomatonIndex shortcut;
+    AutomatonIndex output;
 } AutomatonCell;
 
 typedef struct {

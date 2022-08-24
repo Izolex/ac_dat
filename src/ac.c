@@ -16,11 +16,11 @@ static void automaton_copyCell(Automaton *automaton, const Trie *trie, TrieIndex
 static void automaton_setBase(Automaton *automaton, AutomatonIndex index, AutomatonIndex value);
 static void automaton_setCheck(Automaton *automaton, AutomatonIndex index, AutomatonIndex value);
 static void automaton_setFail(Automaton *automaton, AutomatonIndex index, AutomatonIndex value);
-static void automaton_setShortcut(Automaton *automaton, AutomatonIndex index, AutomatonIndex value);
+static void automaton_setOutput(Automaton *automaton, AutomatonIndex index, AutomatonIndex value);
 static AutomatonIndex automaton_getBase(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getCheck(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getFail(const Automaton *automaton, AutomatonIndex index);
-static AutomatonIndex automaton_getShortcut(const Automaton *automaton, AutomatonIndex index);
+static AutomatonIndex automaton_getOutput(const Automaton *automaton, AutomatonIndex index);
 static bool isTail(const Tail *tail, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
 
 
@@ -36,8 +36,8 @@ static void automaton_setFail(Automaton *automaton, const AutomatonIndex index, 
     automaton->cells[index].fail = value;
 }
 
-static void automaton_setShortcut(Automaton *automaton, const AutomatonIndex index, const AutomatonIndex value) {
-    automaton->cells[index].shortcut = value;
+static void automaton_setOutput(Automaton *automaton, const AutomatonIndex index, const AutomatonIndex value) {
+    automaton->cells[index].output = value;
 }
 
 
@@ -53,8 +53,8 @@ static AutomatonIndex automaton_getFail(const Automaton *automaton, const Automa
     return automaton->cells[index].fail ?: 1;
 }
 
-static AutomatonIndex automaton_getShortcut(const Automaton *automaton, const AutomatonIndex index) {
-    return automaton->cells[index].shortcut;
+static AutomatonIndex automaton_getOutput(const Automaton *automaton, const AutomatonIndex index) {
+    return automaton->cells[index].output;
 }
 
 
@@ -142,9 +142,9 @@ static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtai
             automaton_setFail(automaton, state, next);
 
             if (automaton_getCheck(automaton, automaton_getBase(automaton, next) + END_OF_TEXT) == next) {
-                automaton_setShortcut(automaton, state, next);
+                automaton_setOutput(automaton, state, next);
             } else {
-                automaton_setShortcut(automaton, state, automaton_getShortcut(automaton, next));
+                automaton_setOutput(automaton, state, automaton_getOutput(automaton, next));
             }
 
             list_push(list, state);
@@ -189,7 +189,7 @@ bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle
                 return true;
             }
 
-            back = automaton_getShortcut(automaton, back);
+            back = automaton_getOutput(automaton, back);
         }
     }
 
