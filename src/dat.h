@@ -1,5 +1,5 @@
-#ifndef __DAT_H__
-#define __DAT_H__
+#ifndef DAT_H
+#define DAT_H
 
 #include "typedefs.h"
 

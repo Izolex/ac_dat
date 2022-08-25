@@ -1,5 +1,5 @@
-#ifndef __CHAR_CODING_H__
-#define __CHAR_CODING_H__
+#ifndef CHAR_CODING_H
+#define CHAR_CODING_H
 
 #include "typedefs.h"
 

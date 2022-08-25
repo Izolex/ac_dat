@@ -1,5 +1,5 @@
-#ifndef __TAIL_H__
-#define __TAIL_H__
+#ifndef TAIL_H
+#define TAIL_H
 
 #include "typedefs.h"
 

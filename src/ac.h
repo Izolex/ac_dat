@@ -1,5 +1,5 @@
-#ifndef __AC_H__
-#define __AC_H__
+#ifndef AC_H
+#define AC_H
 
 #include "typedefs.h"
 
