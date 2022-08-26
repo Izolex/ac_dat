@@ -106,7 +106,7 @@ static Automaton *createAutomatonFromTrie(const Trie *trie, List *list) {
     automaton_copyCell(automaton, trie, TRIE_POOL_START);
 
     for (TrieIndex state = TRIE_POOL_START + 1; state <= lastFilled; state++) {
-        TrieIndex check = trie_getCheck(trie, state);
+        const TrieIndex check = trie_getCheck(trie, state);
         if (check > 0) {
             automaton_copyCell(automaton, trie, state);
 
@@ -125,11 +125,14 @@ static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtai
 
     while (!list_isEmpty(list)) {
         const AutomatonIndex check = obtainNode(list);
-        List *checkChildren = trie_getChildren(trie, check);
+        const List *checkChildren = trie_getChildren(trie, check);
+        if (checkChildren == NULL) {
+            continue;
+        }
 
         ListIndex listIndex = list_iterate(checkChildren, 0);
         while (listIndex) {
-            AutomatonTransition transition = list_getValue(checkChildren, listIndex);
+            const AutomatonTransition transition = list_getValue(checkChildren, listIndex);
             listIndex = list_iterate(checkChildren, listIndex);
 
             if (transition == END_OF_TEXT) {
@@ -163,7 +166,7 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
 }
 
 static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
-    TailCell tailCell = tail_getCell(tail, tailIndex);
+    const TailCell tailCell = tail_getCell(tail, tailIndex);
 
     TailCharIndex t = 0;
     NeedleIndex c = needleIndex + 1;
@@ -175,21 +178,21 @@ static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex nee
 }
 
 bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
-    TrieIndex state = TRIE_POOL_START;
+    AutomatonIndex state = TRIE_POOL_START;
 
     for (NeedleIndex i = 0; i < needle->length; i++) {
-        TrieChar character = needle->characters[i];
-        TrieIndex back = state = automaton_step(automaton, state, character);
+        const AutomatonTransition transition = (AutomatonTransition)needle->characters[i];
+        AutomatonIndex nextState = state = automaton_step(automaton, state, transition);
 
-        while (back) {
-            TrieBase base = automaton_getBase(automaton, state);
+        while (nextState) {
+            const AutomatonIndex base = automaton_getBase(automaton, state);
 
             if ((base < 0 && isTail(tail, needle, i, -base)) ||
                 automaton_getCheck(automaton, base + END_OF_TEXT) == state) {
                 return true;
             }
 
-            back = automaton_getOutput(automaton, back);
+            nextState = automaton_getOutput(automaton, nextState);
         }
     }
 

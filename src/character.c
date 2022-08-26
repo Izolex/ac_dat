@@ -4,7 +4,7 @@
 #include "memory.h"
 
 
-static char utf8Length(unsigned char byte);
+static size_t utf8Length(unsigned char byte);
 static bool utf8validate(const unsigned char *string, size_t stringLength);
 static TrieChar utf8toUnicode(const unsigned char string[4]);
 
@@ -24,8 +24,8 @@ utf8Mask *utf8MaskMap[] = {
 };
 
 
-static char utf8Length(const unsigned char byte) {
-    for (char i = 1; i <= 4; i++) {
+static size_t utf8Length(const unsigned char byte) {
+    for (int i = 1; i <= 4; i++) {
         if ((byte & ~utf8MaskMap[i]->mask) == utf8MaskMap[i]->lead) {
             return i;
         }
@@ -36,7 +36,7 @@ static char utf8Length(const unsigned char byte) {
 
 static bool utf8validate(const unsigned char *string, const size_t length) {
     const utf8Mask *u8mask = utf8MaskMap[0];
-    for (char i = 1; i < length; i++) {
+    for (size_t i = 1; i < length; i++) {
         if ((string[i] & ~u8mask->mask) != u8mask->lead) {
             return false;
         }
@@ -46,12 +46,12 @@ static bool utf8validate(const unsigned char *string, const size_t length) {
 }
 
 static TrieChar utf8toUnicode(const unsigned char string[4]) {
-    const char length = utf8Length(string[0]);
+    const size_t length = utf8Length(string[0]);
     unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
 
     uint32_t unicode = (string[0] & utf8MaskMap[length]->mask) << shift;
 
-    for (char i = 1; i < length; i++) {
+    for (size_t i = 1; i < length; i++) {
         shift -= utf8MaskMap[0]->bites;
         unicode |= (string[i] & utf8MaskMap[0]->mask) << shift;
     }
@@ -61,12 +61,13 @@ static TrieChar utf8toUnicode(const unsigned char string[4]) {
 
 
 Needle *createNeedle(const char *needle) {
-    Needle *trieNeedle = safeCalloc(1, sizeof(Needle), "needle");
+    Needle *trieNeedle = safeMalloc(sizeof(Needle), "needle");
+    trieNeedle->length = 0;
     size_t index;
 
     index = 0;
     while (needle[index] != '\0') {
-        const char length = utf8Length((unsigned char)needle[index]);
+        const size_t length = utf8Length((unsigned char)needle[index]);
         if (length == 0) {
             return NULL;
         }
@@ -74,14 +75,14 @@ Needle *createNeedle(const char *needle) {
         trieNeedle->length++;
     }
 
-    trieNeedle->characters = safeCalloc(trieNeedle->length, sizeof(TrieChar), "needle characters");
+    trieNeedle->characters = safeMalloc(trieNeedle->length * sizeof(TrieChar), "needle characters");
 
     index = 0;
     for (NeedleIndex i = 0; i < trieNeedle->length; i++) {
-        const char length = utf8Length((unsigned char)needle[index]);
+        const size_t length = utf8Length((unsigned char)needle[index]);
 
         unsigned char utf8Char[4] = {0,0,0,0};
-        for (char c = 0; c < length; c++) {
+        for (size_t c = 0; c < length; c++) {
             utf8Char[c] = (unsigned char)needle[index + c];
         }
 

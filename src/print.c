@@ -11,7 +11,7 @@ void list_print(const List *list) {
     }
     printf("\n");
     for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].trieIndex);
+        printf("%4ld | ", list->cells[i].value);
     }
     printf("\n");
     for (int i = 0; i < list->size; i++) {
@@ -25,7 +25,7 @@ void list_print(const List *list) {
 }
 
 void tail_print(const Tail *tail) {
-    for (int i = 0; i < tail->cellsSize; i++) {
+    for (int i = 0; i < tail->size; i++) {
         TailCell cell = tail->cells[i];
         printf("%d (%ld, %ld): ", i, cell.length, cell.nextFree);
         if (cell.length > 0) {
@@ -42,16 +42,24 @@ void tail_print(const Tail *tail) {
 
 void trie_print(const Trie *trie) {
     printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
+    for (int i = 0; i < trie->size; i++) {
         printf("%4d | ", i);
     }
     printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
+    for (int i = 0; i < trie->size; i++) {
         printf("%4ld | ", trie->cells[i].base);
     }
     printf("\n");
-    for (int i = 0; i < trie->cellsSize; i++) {
+    for (int i = 0; i < trie->size; i++) {
         printf("%4ld | ", trie->cells[i].check);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->size; i++) {
+        printf("%4d | ", trie->cells[i].children == NULL);
+    }
+    printf("\n");
+    for (int i = 0; i < trie->size; i++) {
+        printf("%4ld | ", trie->cells[i].children == NULL ? 0 : trie->cells[i].children->rear);
     }
     printf("\n\n");
 }

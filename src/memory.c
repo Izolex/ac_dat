@@ -12,6 +12,14 @@ static void error(const size_t size, const char *message) {
     exit(EXIT_FAILURE);
 }
 
+void *safeMalloc(const size_t size, const char *message) {
+    void *pointer = malloc(size);
+    if (pointer == NULL) {
+        error(size, message);
+    }
+    return pointer;
+}
+
 void *safeCalloc(const size_t count, const size_t size, const char *message) {
     void *pointer = calloc(count, size);
     if (pointer == NULL) {
