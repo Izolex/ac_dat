@@ -4,13 +4,13 @@
 #include "memory.h"
 
 
-static void tail_poolReallocate(Tail *tail, TailIndex newSize);
-static void tail_poolInit(Tail *tail, TailIndex fromIndex, TailIndex toIndex);
+static void tailBuilder_poolReallocate(TailBuilder *tailBuilder, TailIndex newSize);
+static void tailBuilder_poolInit(TailBuilder *tailBuilder, TailIndex fromIndex, TailIndex toIndex);
 static void characters_free(Character *chars);
 
 
 Character *allocateCharacters(const TailCharIndex size) {
-    return safeMalloc(size * sizeof(Character), "Tail characters");
+    return safeMalloc(size * sizeof(Character), "Characters");
 }
 
 static void characters_free(Character *chars) {
@@ -18,69 +18,69 @@ static void characters_free(Character *chars) {
     chars = NULL;
 }
 
-static void tail_poolInit(Tail *tail, const TailIndex fromIndex, const TailIndex toIndex) {
+static void tailBuilder_poolInit(TailBuilder *tailBuilder, const TailIndex fromIndex, const TailIndex toIndex) {
     for (TrieIndex i = fromIndex; i < toIndex; i++) {
-        tail->cells[i].chars = NULL;
-        tail->cells[i].length = 0;
-        tail->cells[i].nextFree = i + 1; // next empty cell
+        tailBuilder->cells[i].chars = NULL;
+        tailBuilder->cells[i].length = 0;
+        tailBuilder->cells[i].nextFree = i + 1; // next empty cell
     }
 }
 
-Tail *createTail(const TailIndex size) {
-    Tail *tail = safeMalloc(sizeof(Tail), "Tail");
+TailBuilder *createTailBuilder(const TailIndex size) {
+    TailBuilder *tailBuilder = safeMalloc(sizeof(TailBuilder), "TailBuilder");
 
     if (size < 2) {
         fprintf(stderr, "minimum initial tail size must be at least 2");
         exit(1);
     }
 
-    tail->size = size;
-    tail->cells = safeMalloc(tail->size * sizeof(TailCell), "Tail cells");
+    tailBuilder->size = size;
+    tailBuilder->cells = safeMalloc(tailBuilder->size * sizeof(TailBuilderCell), "TailBuilder cells");
 
-    tail_poolInit(tail, 0, tail->size);
+    tailBuilder_poolInit(tailBuilder, 0, tailBuilder->size);
 
-    tail->cells[tail->size - 1].nextFree = 0;
+    tailBuilder->cells[tailBuilder->size - 1].nextFree = 0;
 
-    return tail;
+    return tailBuilder;
 }
 
-void tail_free(Tail *tail) {
-    for (TailIndex i = 1; i < tail->size; i++) {
-        if (tail->cells[i].chars != NULL) {
-            characters_free(tail->cells[i].chars);
+void tailBuilder_free(TailBuilder *tailBuilder) {
+    for (TailIndex i = 1; i < tailBuilder->size; i++) {
+        if (tailBuilder->cells[i].chars != NULL) {
+            characters_free(tailBuilder->cells[i].chars);
         }
     }
-    free(tail->cells);
-    free(tail);
-    tail = NULL;
+    free(tailBuilder->cells);
+    free(tailBuilder);
+    tailBuilder = NULL;
 }
 
-static TailIndex tail_findPrevFree(Tail *tail, const TailIndex index) {
-    TailIndex lastFree = tail->cells[0].nextFree;
+static TailIndex tailBuilder_findPrevFree(TailBuilder *tailBuilder, const TailIndex index) {
+    TailIndex lastFree = tailBuilder->cells[0].nextFree;
     if (lastFree) {
-        TailIndex nextFree = tail->cells[lastFree].nextFree;
+        TailIndex nextFree = tailBuilder->cells[lastFree].nextFree;
         while (nextFree && nextFree < index) {
-            lastFree = tail->cells[lastFree].nextFree;
-            nextFree = tail->cells[lastFree].nextFree;
+            lastFree = tailBuilder->cells[lastFree].nextFree;
+            nextFree = tailBuilder->cells[lastFree].nextFree;
         }
     }
 
     return lastFree;
 }
 
-void tail_poolReallocate(Tail *tail, const TailIndex newSize) {
-    tail->cells = safeRealloc(tail->cells, newSize, sizeof(TailCell), "Tail cells");
+void tailBuilder_poolReallocate(TailBuilder *tailBuilder, const TailIndex newSize) {
+    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
 
-    tail_poolInit(tail, tail->size, newSize);
+    tailBuilder_poolInit(tailBuilder, tailBuilder->size, newSize);
 
-    const TailIndex prevFree = tail_findPrevFree(tail, tail->size - 1);
+    const TailIndex prevFree = tailBuilder_findPrevFree(tailBuilder, tailBuilder->size - 1);
 
-    tail->cells[prevFree].nextFree = tail->size;
-    tail->cells[newSize - 1].nextFree = 0;
-    tail->size = newSize;
+    tailBuilder->cells[prevFree].nextFree = tailBuilder->size;
+    tailBuilder->cells[newSize - 1].nextFree = 0;
+    tailBuilder->size = newSize;
 }
 
-void tail_freeCell(Tail *tail, const TailIndex index) {
+void tailBuilder_freeCell(TailBuilder *tail, const TailIndex index) {
     free(tail->cells[index].chars);
 
     tail->cells[index].chars = NULL;
@@ -93,19 +93,19 @@ void tail_freeCell(Tail *tail, const TailIndex index) {
         tail->cells[index].nextFree = 0;
         tail->cells[0].nextFree = index;
     } else {
-        const TailIndex prevFree = tail_findPrevFree(tail, index);
+        const TailIndex prevFree = tailBuilder_findPrevFree(tail, index);
 
         tail->cells[index].nextFree = tail->cells[prevFree].nextFree;
         tail->cells[prevFree].nextFree = index;
     }
 }
 
-TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, Character *string) {
+TailIndex tailBuilder_insertChars(TailBuilder *tail, const TailCharIndex length, Character *string) {
     TailIndex index = tail->cells[0].nextFree;
 
     if (index == 0) {
         index = tail->size;
-        tail_poolReallocate(tail, (TailIndex)calculateAllocation(tail->size));
+        tailBuilder_poolReallocate(tail, (TailIndex)calculateAllocation(tail->size));
     }
 
     tail->cells[0].nextFree = tail->cells[index].nextFree;
@@ -117,18 +117,18 @@ TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, Character *st
     return index;
 }
 
-TailCell tail_getCell(const Tail *tail, const TailIndex index) {
-    return tail->cells[index];
+TailBuilderCell tailBuilder_getCell(const TailBuilder *tailBuilder, const TailIndex index) {
+    return tailBuilder->cells[index];
 }
 
-void tail_minimize(Tail *tail) {
-    TailIndex lastFilled = tail->size - 1;
-    while (tail->cells[lastFilled].chars == NULL && lastFilled > 1) {
+void tailBuilder_minimize(TailBuilder *tailBuilder) {
+    TailIndex lastFilled = tailBuilder->size - 1;
+    while (tailBuilder->cells[lastFilled].chars == NULL && lastFilled > 1) {
         lastFilled--;
     }
 
     const TailIndex newSize = lastFilled + 1;
-    tail->size = newSize;
-    tail->cells = safeRealloc(tail->cells, newSize, sizeof(TailCell), "Tail cells");
-    tail->cells[0].nextFree = 0;
+    tailBuilder->size = newSize;
+    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
+    tailBuilder->cells[0].nextFree = 0;
 }

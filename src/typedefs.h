@@ -47,12 +47,12 @@ typedef struct {
     Character *chars;
     TailCharIndex length;
     TailIndex nextFree;
-} TailCell;
+} TailBuilderCell;
 
 typedef struct {
-    TailCell *cells;
+    TailBuilderCell *cells;
     TailIndex size;
-} Tail;
+} TailBuilder;
 
 typedef struct {
     TrieBase base;
@@ -68,7 +68,7 @@ typedef struct {
     TrieOptions *options;
     TrieCell *cells;
     TrieIndex size;
-    Tail *tail;
+    TailBuilder *tailBuilder;
 } Trie;
 
 #endif

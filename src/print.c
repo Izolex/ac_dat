@@ -24,9 +24,9 @@ void list_print(const List *list) {
     printf("\n\n");
 }
 
-void tail_print(const Tail *tail) {
-    for (int i = 0; i < tail->size; i++) {
-        TailCell cell = tail->cells[i];
+void tailBuilder_print(const TailBuilder *tailBuilder) {
+    for (int i = 0; i < tailBuilder->size; i++) {
+        TailBuilderCell cell = tailBuilder->cells[i];
         printf("%d (%ld, %ld): ", i, cell.length, cell.nextFree);
         if (cell.length > 0) {
             for (int c = 0; c < cell.length; c++) {

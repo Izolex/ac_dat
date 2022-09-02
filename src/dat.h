@@ -6,7 +6,7 @@
 TrieOptions *createTrieOptions(bool useTail);
 void trieOptions_free(TrieOptions *options);
 
-Trie *createTrie(TrieOptions *options, Tail *tail, TrieIndex);
+Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, TrieIndex);
 void trie_free(Trie *trie);
 
 void trie_addNeedle(Trie *trie, const Needle *needle);

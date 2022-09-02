@@ -41,24 +41,24 @@ int main() {
     }
 
     TrieOptions *options = createTrieOptions(true);
-    Tail *tail = createTail(10);
-    Trie *trie = createTrie(options, tail, 10);
+    TailBuilder *tailBuilder = createTailBuilder(10);
+    Trie *trie = createTrie(options, tailBuilder, 10);
 
     for (size_t i = 0; i < needlesLength; i++) {
         printf("%s (%lu)\n", utf8Needles[i], needles[i]->length);
         trie_addNeedle(trie, needles[i]);
     }
-    tail_minimize(tail);
+    tailBuilder_minimize(tailBuilder);
     trie_print(trie);
 
     List *list = createList(10);
     Automaton *automaton = createAutomaton_BFS(trie, list);
 
     automaton_print(automaton);
-    tail_print(tail);
+    tailBuilder_print(tailBuilder);
 
     for (size_t i = 0; i < needlesLength; i++) {
-        if (!automaton_search(automaton, tail, needles[i])) {
+        if (!automaton_search(automaton, tailBuilder, needles[i])) {
             fprintf(stderr, "can not find word %s", utf8Needles[i]);
             exit(EXIT_FAILURE);
         }
