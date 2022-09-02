@@ -6,7 +6,7 @@
 
 static size_t utf8Length(unsigned char byte);
 static bool utf8validate(const unsigned char *string, size_t stringLength);
-static TrieChar utf8toUnicode(const unsigned char string[4]);
+static Character utf8toUnicode(const unsigned char string[4]);
 
 
 typedef struct {
@@ -45,7 +45,7 @@ static bool utf8validate(const unsigned char *string, const size_t length) {
     return true;
 }
 
-static TrieChar utf8toUnicode(const unsigned char string[4]) {
+static Character utf8toUnicode(const unsigned char string[4]) {
     const size_t length = utf8Length(string[0]);
     unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
 
@@ -75,7 +75,7 @@ Needle *createNeedle(const char *needle) {
         trieNeedle->length++;
     }
 
-    trieNeedle->characters = safeMalloc(trieNeedle->length * sizeof(TrieChar), "needle characters");
+    trieNeedle->characters = safeMalloc(trieNeedle->length * sizeof(Character), "needle characters");
 
     index = 0;
     for (NeedleIndex i = 0; i < trieNeedle->length; i++) {

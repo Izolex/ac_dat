@@ -6,14 +6,14 @@
 
 static void tail_poolReallocate(Tail *tail, TailIndex newSize);
 static void tail_poolInit(Tail *tail, TailIndex fromIndex, TailIndex toIndex);
-static void trieChars_free(TrieChar *chars);
+static void characters_free(Character *chars);
 
 
-TrieChar *allocateTrieChars(const TailCharIndex size) {
-    return safeMalloc(size * sizeof(TrieChar), "Tail characters");
+Character *allocateCharacters(const TailCharIndex size) {
+    return safeMalloc(size * sizeof(Character), "Tail characters");
 }
 
-static void trieChars_free(TrieChar *chars) {
+static void characters_free(Character *chars) {
     free(chars);
     chars = NULL;
 }
@@ -47,7 +47,7 @@ Tail *createTail(const TailIndex size) {
 void tail_free(Tail *tail) {
     for (TailIndex i = 1; i < tail->size; i++) {
         if (tail->cells[i].chars != NULL) {
-            trieChars_free(tail->cells[i].chars);
+            characters_free(tail->cells[i].chars);
         }
     }
     free(tail->cells);
@@ -100,7 +100,7 @@ void tail_freeCell(Tail *tail, const TailIndex index) {
     }
 }
 
-TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, TrieChar *string) {
+TailIndex tail_insertChars(Tail *tail, const TailCharIndex length, Character *string) {
     TailIndex index = tail->cells[0].nextFree;
 
     if (index == 0) {

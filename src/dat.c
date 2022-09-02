@@ -23,11 +23,11 @@ static void trie_insertNode(Trie *trie, TrieIndex state, TrieBase base, TrieInde
 static void trie_insertEndOfText(Trie *trie, TrieIndex check);
 static void trie_insertBranch(Trie *trie, TrieIndex state, TrieIndex check, const Needle *needle, NeedleIndex needleIndex);
 static void trie_collisionInTail(Trie *trie, TrieIndex state, TrieIndex check, const Needle *needle, NeedleIndex needleIndex);
-static TrieIndex trie_collisionInArray(Trie *trie, TrieIndex state, TrieBase base, TrieIndex check, TrieChar character);
+static TrieIndex trie_collisionInArray(Trie *trie, TrieIndex state, TrieBase base, TrieIndex check, Character character);
 static TrieIndex trie_moveBase(Trie *trie, TrieBase oldBase, TrieBase freeBase, TrieIndex check, TrieIndex state);
 static TrieIndex trie_findEmptyCell(const Trie *trie, TrieIndex node);
 static TrieIndex trie_findFreeBase(const Trie *trie, TrieIndex node);
-static TrieIndex trie_storeCharacter(Trie *trie, TrieIndex lastState, TrieBase newNodeBase, TrieChar character);
+static TrieIndex trie_storeCharacter(Trie *trie, TrieIndex lastState, TrieBase newNodeBase, Character character);
 static TrieIndex trie_storeNeedle(Trie *trie, TrieIndex lastState, const Needle *needle, NeedleIndex needleIndex);
 
 
@@ -171,7 +171,7 @@ static void trie_insertNode(
     trie_setBase(trie, state, base);
 
     const TrieBase checkBase = trie_getBase(trie, check);
-    const TrieChar character = state - checkBase;
+    const Character character = state - checkBase;
 
     List *children = trie_getChildren(trie, check);
 
@@ -235,7 +235,7 @@ static TrieIndex trie_moveBase(
 
     ListIndex checkListIndex = list_iterate(checkChildren, 0);
     while (checkListIndex > 0) {
-        const TrieChar character = list_getValue(checkChildren, checkListIndex);
+        const Character character = list_getValue(checkChildren, checkListIndex);
         const TrieIndex charIndex = oldBase + character;
         const TrieIndex newCharIndex = freeBase + character;
         const TrieBase charBase = trie_getBase(trie, charIndex);
@@ -276,7 +276,7 @@ static TrieIndex trie_collisionInArray(
         const TrieIndex state,
         const TrieBase newNodeBase,
         const TrieIndex check,
-        const TrieChar character
+        const Character character
 ) {
     TrieIndex parentIndex;
     List *baseChildren = trie_getChildren(trie, check);
@@ -314,7 +314,7 @@ static TrieIndex trie_storeCharacter(
         Trie *trie,
         const TrieIndex lastState,
         const TrieBase newNodeBase,
-        const TrieChar character
+        const Character character
 ) {
     const TrieBase lastBase = trie_getBase(trie, lastState);
     const TrieIndex newState = character + lastBase;
@@ -338,7 +338,7 @@ static TrieIndex trie_storeNeedle(
         const NeedleIndex needleIndex
 ) {
     const TrieBase lastBase = trie_getBase(trie, lastState);
-    const TrieChar character = needle->characters[needleIndex];
+    const Character character = needle->characters[needleIndex];
     const TrieIndex newState = character + lastBase;
 
     const TrieBase base = trie_getBase(trie, newState);
@@ -377,7 +377,7 @@ static void trie_insertBranch(
     const TailCharIndex tailCharsLength = needle->length - needleIndex - 1;
 
     if (tailCharsLength > 0) {
-        TrieChar *chars = allocateTrieChars(tailCharsLength);
+        Character *chars = allocateCharacters(tailCharsLength);
 
         TailCharIndex c = 0;
         NeedleIndex i = needleIndex + 1;
@@ -430,7 +430,7 @@ static void trie_collisionInTail(
     TrieBase needleNodeBase = base;
     if ((needle->length - needleIndex - commonTailLength - 1) > 1) {
         const TailCharIndex tailCharsLength = needle->length - needleIndex - commonTailLength - 2;
-        TrieChar *chars = allocateTrieChars(tailCharsLength);
+        Character *chars = allocateCharacters(tailCharsLength);
 
         TailCharIndex c = 0;
         NeedleIndex i = needleIndex + commonTailLength + 2;
@@ -450,7 +450,7 @@ static void trie_collisionInTail(
     TrieBase tailNodeBase = base;
     if (commonTailLength + 1 < tailCell.length) {
         const TailCharIndex tailCharsLength = tailCell.length - commonTailLength - 1;
-        TrieChar *chars = allocateTrieChars(tailCharsLength);
+        Character *chars = allocateCharacters(tailCharsLength);
 
         TailCharIndex i = commonTailLength + 1;
         NeedleIndex c = 0;

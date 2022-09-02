@@ -10,7 +10,7 @@
 #define TRIE_POOL_START 1
 
 
-typedef long TrieIndex, TrieBase, TrieChar, TailIndex, ListValue, AutomatonTransition, AutomatonIndex;
+typedef long TrieIndex, TrieBase, Character, TailIndex, ListValue, AutomatonTransition, AutomatonIndex;
 typedef unsigned long ListIndex, TailCharIndex, NeedleIndex;
 
 typedef struct {
@@ -39,12 +39,12 @@ typedef struct {
 } List;
 
 typedef struct {
-    TrieChar *characters;
+    Character *characters;
     NeedleIndex length;
 } Needle;
 
 typedef struct {
-    TrieChar *chars;
+    Character *chars;
     TailCharIndex length;
     TailIndex nextFree;
 } TailCell;
