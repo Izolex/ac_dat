@@ -40,6 +40,22 @@ void tailBuilder_print(const TailBuilder *tailBuilder) {
     printf("\n\n");
 }
 
+void tail_print(const Tail *tail) {
+    for (int i = 0; i < tail->size; i++) {
+        TailCell cell = tail->cells[i];
+        printf("%d (%ld): ", i, cell.length);
+        if (cell.length > 0) {
+            for (int c = 0; c < cell.length; c++) {
+                printf("%ld ", cell.chars[c]);
+            }
+        } else {
+            printf("empty");
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+}
+
 void trie_print(const Trie *trie) {
     printf("\n");
     for (int i = 0; i < trie->size; i++) {

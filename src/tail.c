@@ -7,6 +7,7 @@
 static void tailBuilder_poolReallocate(TailBuilder *tailBuilder, TailIndex newSize);
 static void tailBuilder_poolInit(TailBuilder *tailBuilder, TailIndex fromIndex, TailIndex toIndex);
 static void characters_free(Character *chars);
+static TailIndex tailBuilder_findLastFilled(const TailBuilder *tailBuilder);
 
 
 Character *allocateCharacters(const TailCharIndex size) {
@@ -18,11 +19,47 @@ static void characters_free(Character *chars) {
     chars = NULL;
 }
 
+
+Tail *createTail(TailIndex size) {
+    Tail *tail = safeMalloc(sizeof(Tail), "Tail");
+    tail->size = size;
+    tail->cells = safeMalloc(sizeof(TailCell) * tail->size, "Tail cells");
+
+    return tail;
+}
+
+Tail *createTailFromBuilder(TailBuilder *tailBuilder) {
+    const TailIndex lastFilled = tailBuilder_findLastFilled(tailBuilder);
+
+    Tail *tail = createTail(lastFilled + 1);
+
+    for (TailIndex i = 0; i < tail->size; i++) {
+        tail->cells[i].length = tailBuilder->cells[i].length;
+        tail->cells[i].chars = tailBuilder->cells[i].chars;
+    }
+
+    return tail;
+}
+
+TailCell tail_getCell(const Tail *tail, const TailIndex index) {
+    return tail->cells[index];
+}
+
+void tail_free(Tail *tail) {
+    for (TailIndex i = 1; i < tail->size; i++) {
+        if (tail->cells[i].chars != NULL) {
+            characters_free(tail->cells[i].chars);
+        }
+    }
+    free(tail->cells);
+    free(tail);
+    tail = NULL;
+}
+
+
 static void tailBuilder_poolInit(TailBuilder *tailBuilder, const TailIndex fromIndex, const TailIndex toIndex) {
     for (TrieIndex i = fromIndex; i < toIndex; i++) {
-        tailBuilder->cells[i].chars = NULL;
-        tailBuilder->cells[i].length = 0;
-        tailBuilder->cells[i].nextFree = i + 1; // next empty cell
+        tailBuilder->cells[i] = (TailBuilderCell) {NULL, 0, i + 1};
     }
 }
 
@@ -44,12 +81,15 @@ TailBuilder *createTailBuilder(const TailIndex size) {
     return tailBuilder;
 }
 
-void tailBuilder_free(TailBuilder *tailBuilder) {
+void tailBuilder_freeCharacters(TailBuilder *tailBuilder) {
     for (TailIndex i = 1; i < tailBuilder->size; i++) {
         if (tailBuilder->cells[i].chars != NULL) {
             characters_free(tailBuilder->cells[i].chars);
         }
     }
+}
+
+void tailBuilder_free(TailBuilder *tailBuilder) {
     free(tailBuilder->cells);
     free(tailBuilder);
     tailBuilder = NULL;
@@ -117,18 +157,19 @@ TailIndex tailBuilder_insertChars(TailBuilder *tail, const TailCharIndex length,
     return index;
 }
 
-TailBuilderCell tailBuilder_getCell(const TailBuilder *tailBuilder, const TailIndex index) {
-    return tailBuilder->cells[index];
+void tailBuilder_minimize(TailBuilder *tailBuilder) {
+    const TailIndex newSize = tailBuilder_findLastFilled(tailBuilder) + 1;
+
+    tailBuilder->size = newSize;
+    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
+    tailBuilder->cells[0].nextFree = 0;
 }
 
-void tailBuilder_minimize(TailBuilder *tailBuilder) {
+static TailIndex tailBuilder_findLastFilled(const TailBuilder *tailBuilder) {
     TailIndex lastFilled = tailBuilder->size - 1;
     while (tailBuilder->cells[lastFilled].chars == NULL && lastFilled > 1) {
         lastFilled--;
     }
 
-    const TailIndex newSize = lastFilled + 1;
-    tailBuilder->size = newSize;
-    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
-    tailBuilder->cells[0].nextFree = 0;
+    return lastFilled;
 }

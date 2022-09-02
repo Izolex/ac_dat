@@ -44,8 +44,8 @@ Using unsigned integer can double the number of nodes ([2^32-1](https://en.wikip
 For doing that, the tail must be disabled and the algorithm for searching free node modified.
 
 ### Tail as single array
-Storing characters in tail requires n×4+8+p bytes of memory, where p is the size of pointer and n the number of characters.
-The tail requires c×n+4 bytes of memory, where c is the size of cell and n the number of the cells.
+Storing characters in tail requires at least n×4+4+p bytes of memory, where p is the size of pointer and n the number of characters.
+The tail requires at least c×n+4+p bytes of memory, where c is the size of cell, n the number of the cells and where p is the size of pointer.
 Using the tail as single character array can reduce the amount of used memory, but it really depends on dictionary.
 
 ### Hash table for node children
@@ -55,7 +55,7 @@ Inserting and deleting in sorted array has time complexity θ(n).
 Using hash tables can reduce time complexity to θ(1), however efficient algorithm for retrieving all values must be found.
 
 ### Not using AC output function
-Output function points to the nearest end state where we can get by fail functions.
+Output function points to the nearest end state where we can get through fail functions.
 The use of the output function speeds up searching in the automaton.
 It requires 4 bytes of memory per each automaton state.
 Not using this function can reduce memory usage of the fully allocated automaton to (2^31-1)×12+4+p ~= 25.8 GB of memory.

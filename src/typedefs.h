@@ -13,6 +13,17 @@
 typedef long TrieIndex, TrieBase, Character, TailIndex, ListValue, AutomatonTransition, AutomatonIndex;
 typedef unsigned long ListIndex, TailCharIndex, NeedleIndex;
 
+
+typedef struct {
+    Character *chars;
+    TailCharIndex length;
+} TailCell;
+
+typedef struct {
+    TailIndex size;
+    TailCell *cells;
+} Tail;
+
 typedef struct {
     AutomatonIndex base;
     AutomatonIndex check;
@@ -24,6 +35,7 @@ typedef struct {
     AutomatonIndex size;
     AutomatonCell *cells;
 } Automaton;
+
 
 typedef struct {
     ListValue value;

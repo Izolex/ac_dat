@@ -48,17 +48,21 @@ int main() {
         printf("%s (%lu)\n", utf8Needles[i], needles[i]->length);
         trie_addNeedle(trie, needles[i]);
     }
-    tailBuilder_minimize(tailBuilder);
+
     trie_print(trie);
+    tailBuilder_print(tailBuilder);
+
+    Tail *tail = createTailFromBuilder(tailBuilder);
+    tailBuilder_free(tailBuilder);
 
     List *list = createList(10);
     Automaton *automaton = createAutomaton_BFS(trie, list);
 
     automaton_print(automaton);
-    tailBuilder_print(tailBuilder);
+    tail_print(tail);
 
     for (size_t i = 0; i < needlesLength; i++) {
-        if (!automaton_search(automaton, tailBuilder, needles[i])) {
+        if (!automaton_search(automaton, tail, needles[i])) {
             fprintf(stderr, "can not find word %s", utf8Needles[i]);
             exit(EXIT_FAILURE);
         }

@@ -21,7 +21,7 @@ static AutomatonIndex automaton_getBase(const Automaton *automaton, AutomatonInd
 static AutomatonIndex automaton_getCheck(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getFail(const Automaton *automaton, AutomatonIndex index);
 static AutomatonIndex automaton_getOutput(const Automaton *automaton, AutomatonIndex index);
-static bool isTail(const TailBuilder *tailBuilder, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
+static bool isTail(const Tail *tail, const Needle *needle, NeedleIndex needleIndex, TailIndex tailIndex);
 
 
 static void automaton_setBase(Automaton *automaton, const AutomatonIndex index, const AutomatonIndex value) {
@@ -165,19 +165,19 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
     return buildAutomaton(trie, list, list_shift);
 }
 
-static bool isTail(const TailBuilder *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
-    const TailBuilderCell tailBuilderCell = tailBuilder_getCell(tail, tailIndex);
+static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
+    const TailCell tailCell = tail_getCell(tail, tailIndex);
 
     TailCharIndex t = 0;
     NeedleIndex c = needleIndex + 1;
-    while (c < needle->length && t < tailBuilderCell.length && needle->characters[c] == tailBuilderCell.chars[t]) {
+    while (c < needle->length && t < tailCell.length && needle->characters[c] == tailCell.chars[t]) {
         c++, t++;
     }
 
-    return c == needle->length && t == tailBuilderCell.length;
+    return c == needle->length && t == tailCell.length;
 }
 
-bool automaton_search(const Automaton *automaton, const TailBuilder *tailBuilder, const Needle *needle) {
+bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
     AutomatonIndex state = TRIE_POOL_START;
 
     for (NeedleIndex i = 0; i < needle->length; i++) {
@@ -187,7 +187,7 @@ bool automaton_search(const Automaton *automaton, const TailBuilder *tailBuilder
         while (nextState) {
             const AutomatonIndex base = automaton_getBase(automaton, state);
 
-            if ((base < 0 && isTail(tailBuilder, needle, i, -base)) ||
+            if ((base < 0 && isTail(tail, needle, i, -base)) ||
                 automaton_getCheck(automaton, base + END_OF_TEXT) == state) {
                 return true;
             }
