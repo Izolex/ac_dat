@@ -3,6 +3,7 @@
 
 #include "typedefs.h"
 
+Automaton *createAutomaton(AutomatonIndex initialSize);
 Automaton *createAutomaton_DFS(const Trie *trie, List *list);
 Automaton *createAutomaton_BFS(const Trie *trie, List *list);
 

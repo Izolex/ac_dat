@@ -7,6 +7,7 @@
 #include "tail.h"
 #include "list.h"
 #include "typedefs.h"
+#include "file.h"
 
 Needle *safeCreateNeedle(const char *string) {
     Needle *needle = createNeedle(string);
@@ -16,6 +17,7 @@ Needle *safeCreateNeedle(const char *string) {
     }
     return needle;
 }
+
 int main() {
     const char *utf8Needles[] = {
 // it is really long when printing trie with these characters
@@ -61,6 +63,20 @@ int main() {
     automaton_print(automaton);
     tail_print(tail);
 
+    const char *path = "../dictionary";
+    file_store(path, automaton, tail);
+
+    automaton_free(automaton);
+    tail_free(tail);
+
+    FileData fileData = file_load(path);
+    automaton = fileData.automaton;
+    tail = fileData.tail;
+
+    automaton_print(automaton);
+    tail_print(tail);
+
+
     for (size_t i = 0; i < needlesLength; i++) {
         if (!automaton_search(automaton, tail, needles[i])) {
             fprintf(stderr, "can not find word %s", utf8Needles[i]);
@@ -70,9 +86,16 @@ int main() {
         needle_free(needles[i]);
     }
 
+
+    if (0 != remove(path)) {
+        fprintf(stderr, "can not remove dictionary");
+        exit(EXIT_FAILURE);
+    }
+
+
     automaton_free(automaton);
+    tail_free(tail);
     list_free(list);
     trie_free(trie);
     trieOptions_free(options);
-
 }

@@ -83,4 +83,9 @@ typedef struct {
     TailBuilder *tailBuilder;
 } Trie;
 
+typedef struct {
+    Automaton *automaton;
+    Tail *tail;
+} FileData;
+
 #endif

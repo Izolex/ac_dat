@@ -3,6 +3,7 @@
 Implementation of [Aho-Corasick](http://cr.yp.to/bib/1975/aho.pdf) ([wiki](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm)) algorithm with [Double Array Trie](https://www.co-ding.com/assets/pdf/dat.pdf) data structure in [C](https://en.wikipedia.org/wiki/C_(programming_language)).
 Accepts [UTF8](https://en.wikipedia.org/wiki/UTF-8) encoded strings.
 Characters are internally encoded into [Unicode](https://en.wikipedia.org/wiki/Unicode) [code points](https://en.wikipedia.org/wiki/Code_point).
+Implementation contains functions for storing the automaton in [Binary file](https://en.wikipedia.org/wiki/Binary_file).
 Example of usage can be found in src/main.c file.
 
 Aho-Corasick (AC) is text search algorithm which uses [Deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton) (DFA, also [FSA](https://en.wikipedia.org/wiki/Finite-state_machine)).

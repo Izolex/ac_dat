@@ -8,7 +8,6 @@
 #include "memory.h"
 
 
-static Automaton *createAutomaton(AutomatonIndex initialSize);
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list);
 static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtainNode)(List *list));
 static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex state, AutomatonTransition transition);
@@ -86,7 +85,7 @@ void automaton_free(Automaton *automaton) {
     automaton = NULL;
 }
 
-static Automaton *createAutomaton(const AutomatonIndex initialSize) {
+Automaton *createAutomaton(const AutomatonIndex initialSize) {
     Automaton *automaton = safeCalloc(1, sizeof(Automaton), "AC automaton");
 
     automaton->size = initialSize;
