@@ -11,7 +11,7 @@
 
 Needle *safeCreateNeedle(const char *string) {
     Needle *needle = createNeedle(string);
-    if (needle == NULL) {
+    if (unlikely(needle == NULL)) {
         fprintf(stderr, "needle is not valid UTF8");
         exit(EXIT_FAILURE);
     }

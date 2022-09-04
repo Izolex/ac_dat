@@ -35,9 +35,8 @@ static size_t utf8Length(const unsigned char byte) {
 }
 
 static bool utf8validate(const unsigned char *string, const size_t length) {
-    const utf8Mask *u8mask = utf8MaskMap[0];
     for (size_t i = 1; i < length; i++) {
-        if ((string[i] & ~u8mask->mask) != u8mask->lead) {
+        if (unlikely((string[i] & ~utf8MaskMap[0]->mask) != utf8MaskMap[0]->lead)) {
             return false;
         }
     }
@@ -68,7 +67,7 @@ Needle *createNeedle(const char *needle) {
     index = 0;
     while (needle[index] != '\0') {
         const size_t length = utf8Length((unsigned char)needle[index]);
-        if (length == 0) {
+        if (unlikely(length == 0)) {
             return NULL;
         }
         index += length;
@@ -86,7 +85,7 @@ Needle *createNeedle(const char *needle) {
             utf8Char[c] = (unsigned char)needle[index + c];
         }
 
-        if (!utf8validate(utf8Char, length)) {
+        if (unlikely(!utf8validate(utf8Char, length))) {
             return NULL;
         }
 

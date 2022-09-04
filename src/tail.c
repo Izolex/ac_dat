@@ -47,7 +47,7 @@ TailCell tail_getCell(const Tail *tail, const TailIndex index) {
 
 void tail_free(Tail *tail) {
     for (TailIndex i = 1; i < tail->size; i++) {
-        if (tail->cells[i].chars != NULL) {
+        if (likely(tail->cells[i].chars != NULL)) {
             characters_free(tail->cells[i].chars);
         }
     }
@@ -99,7 +99,7 @@ static TailIndex tailBuilder_findPrevFree(TailBuilder *tailBuilder, const TailIn
     TailIndex lastFree = tailBuilder->cells[0].nextFree;
     if (lastFree) {
         TailIndex nextFree = tailBuilder->cells[lastFree].nextFree;
-        while (nextFree && nextFree < index) {
+        while (likely(nextFree && nextFree < index)) {
             lastFree = tailBuilder->cells[lastFree].nextFree;
             nextFree = tailBuilder->cells[lastFree].nextFree;
         }
@@ -167,7 +167,7 @@ void tailBuilder_minimize(TailBuilder *tailBuilder) {
 
 static TailIndex tailBuilder_findLastFilled(const TailBuilder *tailBuilder) {
     TailIndex lastFilled = tailBuilder->size - 1;
-    while (tailBuilder->cells[lastFilled].chars == NULL && lastFilled > 1) {
+    while (likely(tailBuilder->cells[lastFilled].chars == NULL && lastFilled > 1)) {
         lastFilled--;
     }
 

@@ -52,7 +52,7 @@ static void trie_poolInit(Trie *trie, const TrieIndex fromIndex, const TrieIndex
 }
 
 Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex initialSize) {
-    if (initialSize < 4) {
+    if (unlikely(initialSize < 4)) {
         fprintf(stderr, "minimum initial DAT size must be at least 4");
         exit(1);
     }
@@ -87,19 +87,11 @@ void trie_free(Trie *trie) {
 }
 
 TrieBase trie_getBase(const Trie *trie, const TrieIndex index) {
-    if (index < trie->size) {
-        return trie->cells[index].base;
-    }
-
-    return 0;
+    return likely(index < trie->size) ? trie->cells[index].base : 0;
 }
 
 TrieIndex trie_getCheck(const Trie *trie, const TrieIndex index) {
-    if (index < trie->size) {
-        return trie->cells[index].check;
-    }
-
-    return 0;
+    return likely(index < trie->size) ? trie->cells[index].check : 0;
 }
 
 List *trie_getChildren(const Trie *trie, const TrieIndex index) {
@@ -131,7 +123,7 @@ static void trie_poolReallocate(Trie *trie, const TrieIndex newSize) {
 }
 
 static void trie_poolCheckCapacity(Trie *trie, const TrieIndex index) {
-    if (trie->size <= index + 1) {
+    if (unlikely(trie->size <= index + 1)) {
         trie_poolReallocate(trie, (TrieIndex)calculateAllocation(index));
     }
 }
@@ -146,7 +138,7 @@ static void trie_allocateCell(Trie *trie, const TrieIndex cell) {
 
 void trie_freeCell(Trie *trie, const TrieIndex cell) {
     TrieIndex next = -trie_getCheck(trie, TRIE_POOL_START);
-    while (next != TRIE_POOL_START && next < cell) {
+    while (likely(next != TRIE_POOL_START && next < cell)) {
         next = -trie_getCheck(trie, next);
     }
 
@@ -185,11 +177,11 @@ static void trie_insertNode(
 
 static TrieIndex trie_findEmptyCell(const Trie *trie, const TrieIndex node) {
     TrieIndex state = -trie_getCheck(trie, 0);
-    while (state != 0 && state <= node) {
+    while (likely(state != 0 && state <= node)) {
         state = -trie_getCheck(trie, state);
     }
 
-    if (state == 0) {
+    if (unlikely(state == 0)) {
         state = trie->size;
     }
 
@@ -206,7 +198,7 @@ static TrieIndex trie_findFreeBase(const Trie *trie, const TrieIndex node) {
 
     SEARCH:
     listIndex = list_iterate(list, 0);
-    while (listIndex > 0) {
+    while (likely(listIndex > 0)) {
         TrieIndex index = base + list_getValue(list, listIndex);
         if (trie_getCheck(trie, index) > 0) {
             if (lastCell == emptyCell) {
@@ -234,7 +226,7 @@ static TrieIndex trie_moveBase(
     const List *checkChildren = trie_getChildren(trie, check);
 
     ListIndex checkListIndex = list_iterate(checkChildren, 0);
-    while (checkListIndex > 0) {
+    while (likely(checkListIndex > 0)) {
         const Character character = list_getValue(checkChildren, checkListIndex);
         const TrieIndex charIndex = oldBase + character;
         const TrieIndex newCharIndex = freeBase + character;
@@ -376,7 +368,7 @@ static void trie_insertBranch(
     TrieBase newNodeBase = 1;
     const TailCharIndex tailCharsLength = needle->length - needleIndex - 1;
 
-    if (tailCharsLength > 0) {
+    if (likely(tailCharsLength > 0)) {
         Character *chars = allocateCharacters(tailCharsLength);
 
         TailCharIndex c = 0;
@@ -389,7 +381,7 @@ static void trie_insertBranch(
     }
 
     trie_insertNode(trie, state, newNodeBase, check);
-    if (newNodeBase > 0) {
+    if (likely(newNodeBase > 0)) {
         trie_insertEndOfText(trie, state);
     }
 }

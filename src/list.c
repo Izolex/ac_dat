@@ -142,7 +142,7 @@ static void list_freeCell(List *list, const ListIndex index) {
         list_setLastFree(list, index);
     } else {
         ListIndex nextFree = list_getFirstFree(list);
-        while (nextFree < index) {
+        while (likely(nextFree < index)) {
             nextFree = list->cells[nextFree].next;
         }
 
@@ -239,7 +239,7 @@ ListIndex list_insert(List *list, const ListValue value) {
 }
 
 static void list_ensureNotEmpty(List *list) {
-    if (list_isEmpty(list)) {
+    if (unlikely(list_isEmpty(list))) {
         fprintf(stderr, "list is empty");
         exit(EXIT_FAILURE);
     }
@@ -303,6 +303,8 @@ ListIndex list_linearSearch(const List *list, const ListValue value) {
 
 // for non sorted list
 void list_remove(List *list, const ListIndex index) {
+    list_ensureNotEmpty(list);
+
     if (list_getFront(list) == index) {
         list_setFront(list, list->cells[index].next);
         if (list->front) {
@@ -330,6 +332,8 @@ void list_remove(List *list, const ListIndex index) {
 
 // keeps list sorted
 void list_delete(List *list, const ListIndex index) {
+    list_ensureNotEmpty(list);
+
     if (list_getRear(list) == index) {
         list_remove(list, index);
         return;

@@ -96,7 +96,7 @@ Automaton *createAutomaton(const AutomatonIndex initialSize) {
 
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list) {
     TrieIndex lastFilled = -trie_getBase(trie, 0);
-    while (trie_getCheck(trie, lastFilled) <= 0) {
+    while (likely(trie_getCheck(trie, lastFilled) <= 0)) {
         lastFilled--;
     }
 
@@ -106,7 +106,7 @@ static Automaton *createAutomatonFromTrie(const Trie *trie, List *list) {
 
     for (TrieIndex state = TRIE_POOL_START + 1; state <= lastFilled; state++) {
         const TrieIndex check = trie_getCheck(trie, state);
-        if (check > 0) {
+        if (likely(check > 0)) {
             automaton_copyCell(automaton, trie, state);
 
             if (check == TRIE_POOL_START) {
@@ -122,7 +122,7 @@ static Automaton *createAutomatonFromTrie(const Trie *trie, List *list) {
 static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtainNode)(List *list)) {
     Automaton *automaton = createAutomatonFromTrie(trie, list);
 
-    while (!list_isEmpty(list)) {
+    while (likely(!list_isEmpty(list))) {
         const AutomatonIndex check = obtainNode(list);
         const List *checkChildren = trie_getChildren(trie, check);
         if (checkChildren == NULL) {
