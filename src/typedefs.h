@@ -14,10 +14,12 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define prefetch(addr, rw, locality) __builtin_prefetch((addr), (rw), (locality))
+#define add_overflow(a, b, result) __builtin_add_overflow((a), (b), (result))
 #else
 #define likely(x) (x)
 #define unlikely(x) (x)
 #define prefetch(addr, rw, locality) (void)
+#define add_overflow(a, b, result) ({(*result) = (a) + (b); false;})
 #endif
 
 

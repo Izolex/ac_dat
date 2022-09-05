@@ -10,6 +10,7 @@
 #define TRIE_CHILDREN_LIST_INIT_SIZE 4
 
 
+static TrieIndex createState(Character character, TrieBase base);
 static size_t getListSize(const List *list);
 static void trie_setCheck(Trie *trie, TrieIndex index, TrieIndex value);
 static void trie_setBase(Trie *trie, TrieIndex index, TrieBase value);
@@ -29,6 +30,16 @@ static TrieIndex trie_findEmptyCell(const Trie *trie, TrieIndex node);
 static TrieIndex trie_findFreeBase(const Trie *trie, TrieIndex node);
 static TrieIndex trie_storeCharacter(Trie *trie, TrieIndex lastState, TrieBase newNodeBase, Character character);
 static TrieIndex trie_storeNeedle(Trie *trie, TrieIndex lastState, const Needle *needle, NeedleIndex needleIndex);
+
+
+static TrieIndex createState(const Character character, const TrieBase base) {
+    TrieIndex state = 0;
+    if (unlikely(add_overflow(character, base, &state))) {
+        fprintf(stderr, "index reached maximum value");
+        exit(EXIT_FAILURE);
+    }
+    return state;
+}
 
 
 TrieOptions *createTrieOptions(const bool useTail) {
@@ -228,8 +239,8 @@ static TrieIndex trie_moveBase(
     ListIndex checkListIndex = list_iterate(checkChildren, 0);
     while (likely(checkListIndex > 0)) {
         const Character character = list_getValue(checkChildren, checkListIndex);
-        const TrieIndex charIndex = oldBase + character;
-        const TrieIndex newCharIndex = freeBase + character;
+        const TrieIndex charIndex = createState(character, oldBase);
+        const TrieIndex newCharIndex = createState(character, freeBase);
         const TrieBase charBase = trie_getBase(trie, charIndex);
 
         if (charIndex == nextState) {
@@ -240,7 +251,8 @@ static TrieIndex trie_moveBase(
         if (charChildren != NULL) {
             ListIndex charListIndex = list_iterate(charChildren, 0);
             while (charListIndex > 0) {
-                trie_setCheck(trie, charBase + list_getValue(charChildren, charListIndex), newCharIndex);
+                const TrieIndex s = createState(list_getValue(charChildren, charListIndex), charBase);
+                trie_setCheck(trie, s, newCharIndex);
                 charListIndex = list_iterate(charChildren, charListIndex);
             }
         }
@@ -289,7 +301,7 @@ static TrieIndex trie_collisionInArray(
 
     const TrieBase tempBase = trie_getBase(trie, parentIndex);
     const TrieBase freeBase = trie_findFreeBase(trie, parentIndex);
-    const TrieIndex newState = isBaseCollision ? freeBase + character : state;
+    const TrieIndex newState = isBaseCollision ? createState(character, freeBase) : state;
 
     if (isBaseCollision) {
         list_pop(baseChildren);
@@ -309,7 +321,7 @@ static TrieIndex trie_storeCharacter(
         const Character character
 ) {
     const TrieBase lastBase = trie_getBase(trie, lastState);
-    const TrieIndex newState = character + lastBase;
+    const TrieIndex newState = createState(character, lastBase);
     const TrieBase newStateBase = trie_getBase(trie, newState);
     const TrieIndex check = trie_getCheck(trie, newState);
 
@@ -331,7 +343,7 @@ static TrieIndex trie_storeNeedle(
 ) {
     const TrieBase lastBase = trie_getBase(trie, lastState);
     const Character character = needle->characters[needleIndex];
-    const TrieIndex newState = character + lastBase;
+    const TrieIndex newState = createState(character, lastBase);
 
     const TrieBase base = trie_getBase(trie, newState);
     const TrieIndex check = trie_getCheck(trie, newState);

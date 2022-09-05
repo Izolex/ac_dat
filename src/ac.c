@@ -9,6 +9,7 @@
 
 
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list);
+static AutomatonIndex createState(AutomatonTransition transition, AutomatonIndex base);
 static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtainNode)(List *list));
 static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex state, AutomatonTransition transition);
 static void automaton_copyCell(Automaton *automaton, const Trie *trie, TrieIndex trieIndex);
@@ -57,6 +58,16 @@ static AutomatonIndex automaton_getOutput(const Automaton *automaton, const Auto
 }
 
 
+static AutomatonIndex createState(const AutomatonTransition transition, const AutomatonIndex base) {
+    AutomatonIndex state = 0;
+    if (unlikely(add_overflow(transition, base, &state))) {
+        fprintf(stderr, "index reached maximum value");
+        exit(EXIT_FAILURE);
+    }
+    return state;
+}
+
+
 static void automaton_copyCell(Automaton *automaton, const Trie *trie, const TrieIndex trieIndex) {
     automaton_setBase(automaton, (AutomatonIndex)trieIndex, (AutomatonIndex)trie_getBase(trie, trieIndex));
     automaton_setCheck(automaton, (AutomatonIndex)trieIndex, (AutomatonIndex)trie_getCheck(trie, trieIndex));
@@ -65,10 +76,10 @@ static void automaton_copyCell(Automaton *automaton, const Trie *trie, const Tri
 static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex state, const AutomatonTransition transition) {
     AutomatonIndex nextState;
 
-    nextState = automaton_getBase(automaton, state) + transition;
+    nextState = createState(transition, automaton_getBase(automaton, state));
     while (automaton_getCheck(automaton, nextState) != state && state != TRIE_POOL_START) {
         state = automaton_getFail(automaton, state);
-        nextState = automaton_getBase(automaton, state) + transition;
+        nextState = createState(transition, automaton_getBase(automaton, state));
     }
 
     nextState = automaton_getBase(automaton, state) + transition;
@@ -138,7 +149,7 @@ static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtai
                 continue;
             }
 
-            const AutomatonIndex state = automaton_getBase(automaton, check) + transition;
+            const AutomatonIndex state = createState(transition, automaton_getBase(automaton, check));
             const AutomatonIndex next = automaton_step(automaton, automaton_getFail(automaton, check), transition);
 
             automaton_setFail(automaton, state, next);
