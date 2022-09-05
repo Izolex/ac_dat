@@ -379,7 +379,9 @@ ListIndex list_iterate(const List *list, const ListIndex currentIndex) {
         return list_getFront(list);
     }
 
-    return list->cells[currentIndex].next;
+    const ListIndex next = list->cells[currentIndex].next;
+    prefetch(&list->cells[next], 0, 2);
+    return next;
 }
 
 static void list_mergeSort_merge(List *list, const ListIndex left, const ListIndex middle, const ListIndex right) {

@@ -13,9 +13,11 @@
 #ifdef __GNUC__
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
+#define prefetch(addr, rw, locality) __builtin_prefetch((addr), (rw), (locality))
 #else
 #define likely(x) (x)
 #define unlikely(x) (x)
+#define prefetch(addr, rw, locality) (void)
 #endif
 
 
