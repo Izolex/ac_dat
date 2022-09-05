@@ -1,7 +1,7 @@
 #ifndef AC_LIST_H
 #define AC_LIST_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 List *createList(ListIndex initialSize);
 void list_free(List *list);

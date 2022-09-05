@@ -1,7 +1,7 @@
 #ifndef DAT_H
 #define DAT_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 TrieOptions *createTrieOptions(bool useTail);
 void trieOptions_free(TrieOptions *options);

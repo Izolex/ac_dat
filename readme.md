@@ -8,7 +8,7 @@ Example of usage can be found in src/main.c file.
 
 Aho-Corasick (AC) is text search algorithm which uses [Deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton) (DFA, also [FSA](https://en.wikipedia.org/wiki/Finite-state_machine)).
 It's based on idea of [KMP](https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm) algorithm.
-It can search text in linear time O(n+m+c) where n is the length of the strings, m is the length of the searched text and c is the count of matches.
+It can search text in linear time `O(n+m+c)` where n is the length of the strings, m is the length of the searched text and c is the count of matches.
 
 Double Array Trie (DAT) is data structure which can store [Trie](https://en.wikipedia.org/wiki/Trie) in two [Arrays](https://en.wikipedia.org/wiki/Array_data_structure).
 Storing the trie in DAT will consume less memory than in [Hash tables](https://en.wikipedia.org/wiki/Hash_table).
@@ -52,8 +52,10 @@ Using the tail as single character array can reduce the amount of used memory, b
 ### Hash table for node children
 When building the trie, each node keeps list of outwards transition functions (characters).
 These lists speeds up solving collision in array and building AC automaton dramatically, but it's costing time keeping them up-to-date.
-Inserting and deleting in sorted array has time complexity θ(n).
-Using hash tables can reduce time complexity to θ(1), however efficient algorithm for retrieving all values must be found.
+Inserting and deleting in sorted array has time complexity `θ(n)`.
+Using hash tables can reduce time complexity to `θ(1)`, however efficient algorithm for retrieving all values must be found.
+Another option is not keeping information about outwards transition functions then each must be tried, so it's usefully with smaller alphabets.
+Unicode 14 has 144,697 characters.
 
 ### Not using AC output function
 Output function points to the nearest end state where we can get through fail functions.

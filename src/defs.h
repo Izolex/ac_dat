@@ -23,8 +23,24 @@
 #endif
 
 
-typedef long TrieIndex, TrieBase, Character, TailIndex, ListValue, AutomatonTransition, AutomatonIndex;
-typedef unsigned long ListIndex, TailCharIndex, NeedleIndex;
+typedef int32_t TrieIndex, TrieBase, Character, TailIndex, ListValue, AutomatonTransition, AutomatonIndex;
+typedef u_int32_t ListIndex, TailCharIndex, NeedleIndex;
+
+
+typedef struct {
+    Character *characters;
+    NeedleIndex length;
+} Needle;
+
+
+typedef struct {
+    AutomatonIndex base, check, fail, output;
+} AutomatonCell;
+
+typedef struct {
+    AutomatonIndex size;
+    AutomatonCell *cells;
+} Automaton;
 
 
 typedef struct {
@@ -38,37 +54,6 @@ typedef struct {
 } Tail;
 
 typedef struct {
-    AutomatonIndex base;
-    AutomatonIndex check;
-    AutomatonIndex fail;
-    AutomatonIndex output;
-} AutomatonCell;
-
-typedef struct {
-    AutomatonIndex size;
-    AutomatonCell *cells;
-} Automaton;
-
-
-typedef struct {
-    ListValue value;
-    ListIndex next;
-    ListIndex prev;
-} ListCell;
-
-typedef struct {
-    ListCell *cells;
-    ListIndex size;
-    ListIndex rear;
-    ListIndex front;
-} List;
-
-typedef struct {
-    Character *characters;
-    NeedleIndex length;
-} Needle;
-
-typedef struct {
     Character *chars;
     TailCharIndex length;
     TailIndex nextFree;
@@ -79,15 +64,27 @@ typedef struct {
     TailIndex size;
 } TailBuilder;
 
+
+typedef struct {
+    ListValue value;
+    ListIndex next, prev;
+} ListCell;
+
+typedef struct {
+    ListCell *cells;
+    ListIndex size, rear, front;
+} List;
+
+
+typedef struct {
+    bool useTail: 1;
+} TrieOptions;
+
 typedef struct {
     TrieBase base;
     TrieIndex check;
     List *children;
 } TrieCell;
-
-typedef struct {
-    bool useTail: 1;
-} TrieOptions;
 
 typedef struct {
     TrieOptions *options;

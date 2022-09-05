@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "ac.h"
 #include "tail.h"
-#include "typedefs.h"
+#include "defs.h"
 
 
 static FILE *safeOpen(const char *filename, const char *mode);

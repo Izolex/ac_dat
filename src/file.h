@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 void file_store(const char *targetPath, const Automaton *automaton, const Tail *tail);
 

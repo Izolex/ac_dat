@@ -1,7 +1,7 @@
 #ifndef TAIL_H
 #define TAIL_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 TailBuilder *createTailBuilder(TailIndex size);
 void tailBuilder_free(TailBuilder *tailBuilder);

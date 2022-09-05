@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "list.h"
-#include "memory.h"
+#include "mem.h"
 
 
 static ListIndex list_getFirstFree(const List *list);
@@ -138,7 +138,6 @@ static void list_freeCell(List *list, const ListIndex index) {
     } else if (list_getLastFree(list) <= index) {
         list_setLinks(list, index, 0, list_getLastFree(list));
         list->cells[list_getLastFree(list)].next = index;
-
         list_setLastFree(list, index);
     } else {
         ListIndex nextFree = list_getFirstFree(list);
@@ -194,7 +193,7 @@ ListIndex list_push(List *list, const ListValue value) {
 }
 
 ListIndex list_insert(List *list, const ListValue value) {
-    if (list_getFront(list) == 0 && list_getRear(list) == 0 || list->cells[list_getRear(list)].value < value) {
+    if ((list_getFront(list) == 0 && list_getRear(list) == 0) || list->cells[list_getRear(list)].value < value) {
         return list_push(list, value);
     }
     ListIndex from = 0, to = list_getRear(list);
@@ -248,8 +247,8 @@ static void list_ensureNotEmpty(List *list) {
 ListValue list_shift(List *list) {
     list_ensureNotEmpty(list);
 
-    ListIndex index = list->front;
-    ListValue value = list->cells[index].value;
+    const ListIndex index = list->front;
+    const ListValue value = list->cells[index].value;
 
     list->cells[index].value = 0;
     list_setFront(list, list->cells[index].next);
@@ -268,8 +267,8 @@ ListValue list_shift(List *list) {
 ListValue list_pop(List *list) {
     list_ensureNotEmpty(list);
 
-    ListIndex index = list_getRear(list);
-    ListValue value = list->cells[index].value;
+    const ListIndex index = list_getRear(list);
+    const ListValue value = list->cells[index].value;
 
     list->cells[index].value = 0;
     list_setRear(list, list->cells[index].prev);
@@ -339,7 +338,7 @@ void list_delete(List *list, const ListIndex index) {
         return;
     }
 
-    ListIndex rear = list_getRear(list);
+    const ListIndex rear = list_getRear(list);
 
     for (ListIndex i = index + 1; i <= rear; i++) {
         list->cells[i - 1].value = list->cells[i].value;
@@ -385,7 +384,7 @@ ListIndex list_iterate(const List *list, const ListIndex currentIndex) {
 }
 
 static void list_mergeSort_merge(List *list, const ListIndex left, const ListIndex middle, const ListIndex right) {
-    ListIndex leftSize = middle - left + 1, rightSize = right - middle;
+    const ListIndex leftSize = middle - left + 1, rightSize = right - middle;
     ListCell leftArray[leftSize], rightArray[rightSize];
 
     for (ListIndex i = 0; i < leftSize; i++) {
@@ -420,7 +419,7 @@ static void list_mergeSort_merge(List *list, const ListIndex left, const ListInd
 }
 
 void list_mergeSort(List *list) {
-    ListIndex toIndex = list_getRear(list);
+    const ListIndex toIndex = list_getRear(list);
     if (toIndex == 0) {
         return;
     }
@@ -474,7 +473,8 @@ ListIndex list_binarySearch(const List *list, const ListValue value) {
     ListIndex to = list_getRear(list);
 
     while (from <= to) {
-        ListIndex middle = from + ((to - from) / 2);
+        const ListIndex middle = from + ((to - from) / 2);
+
         if (value == list->cells[middle].value) {
             return middle;
         } else if (value > list->cells[middle].value) {

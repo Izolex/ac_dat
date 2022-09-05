@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
-#include "typedefs.h"
+#include "defs.h"
 
 
 static void error(size_t size, const char *message);
@@ -38,13 +38,13 @@ void *safeRealloc(void *pointer, const size_t count, const size_t size, const ch
 }
 
 size_t calculateAllocation(const size_t size) {
-    if (unlikely(size > LONG_MAX)) {
-        fprintf(stderr, "needs more than a max of %lu size", LONG_MAX);
+    if (unlikely(size > INT32_MAX)) {
+        fprintf(stderr, "needs more than a max of %d size", INT32_MAX);
         exit(EXIT_FAILURE);
     }
     const size_t newSize = size + (size_t) ceill((long double)size / 2) + 1;
-    if (unlikely(newSize > LONG_MAX)) {
-        return LONG_MAX;
+    if (unlikely(newSize > INT32_MAX)) {
+        return INT32_MAX;
     }
     return newSize;
 }

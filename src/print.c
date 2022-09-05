@@ -1,25 +1,24 @@
 #include <stdio.h>
-#include "typedefs.h"
-#include "ac.h"
+#include "defs.h"
 
 void list_print(const List *list) {
     printf("\n\n");
-    printf("FirstFree: %ld, lastFree: %ld, front: %ld, rear: %ld", list->cells[0].next, list->cells[0].prev, list->front, list->rear);
+    printf("FirstFree: %u, lastFree: %u, front: %u, rear: %u", list->cells[0].next, list->cells[0].prev, list->front, list->rear);
     printf("\n\n");
     for (int i = 0; i < list->size; i++) {
         printf("%4d | ", i);
     }
     printf("\n");
     for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].value);
+        printf("%4d | ", list->cells[i].value);
     }
     printf("\n");
     for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].next);
+        printf("%4u | ", list->cells[i].next);
     }
     printf("\n");
     for (int i = 0; i < list->size; i++) {
-        printf("%4ld | ", list->cells[i].prev);
+        printf("%4u | ", list->cells[i].prev);
     }
     printf("\n\n");
 }
@@ -27,10 +26,10 @@ void list_print(const List *list) {
 void tailBuilder_print(const TailBuilder *tailBuilder) {
     for (int i = 0; i < tailBuilder->size; i++) {
         TailBuilderCell cell = tailBuilder->cells[i];
-        printf("%d (%ld, %ld): ", i, cell.length, cell.nextFree);
+        printf("%d (%u, %d): ", i, cell.length, cell.nextFree);
         if (cell.length > 0) {
             for (int c = 0; c < cell.length; c++) {
-                printf("%ld ", cell.chars[c]);
+                printf("%d ", cell.chars[c]);
             }
         } else {
             printf("empty");
@@ -43,10 +42,10 @@ void tailBuilder_print(const TailBuilder *tailBuilder) {
 void tail_print(const Tail *tail) {
     for (int i = 0; i < tail->size; i++) {
         TailCell cell = tail->cells[i];
-        printf("%d (%ld): ", i, cell.length);
+        printf("%d (%u): ", i, cell.length);
         if (cell.length > 0) {
             for (int c = 0; c < cell.length; c++) {
-                printf("%ld ", cell.chars[c]);
+                printf("%d ", cell.chars[c]);
             }
         } else {
             printf("empty");
@@ -63,11 +62,11 @@ void trie_print(const Trie *trie) {
     }
     printf("\n");
     for (int i = 0; i < trie->size; i++) {
-        printf("%4ld | ", trie->cells[i].base);
+        printf("%4d | ", trie->cells[i].base);
     }
     printf("\n");
     for (int i = 0; i < trie->size; i++) {
-        printf("%4ld | ", trie->cells[i].check);
+        printf("%4d | ", trie->cells[i].check);
     }
     printf("\n");
     for (int i = 0; i < trie->size; i++) {
@@ -75,7 +74,7 @@ void trie_print(const Trie *trie) {
     }
     printf("\n");
     for (int i = 0; i < trie->size; i++) {
-        printf("%4ld | ", trie->cells[i].children == NULL ? 0 : trie->cells[i].children->rear);
+        printf("%4u | ", trie->cells[i].children == NULL ? 0 : trie->cells[i].children->rear);
     }
     printf("\n\n");
 }
@@ -87,19 +86,19 @@ void automaton_print(const Automaton *automaton) {
     }
     printf("\n");
     for (int i = 0; i < automaton->size; i++) {
-        printf("%4ld | ", automaton->cells[i].base);
+        printf("%4d | ", automaton->cells[i].base);
     }
     printf("\n");
     for (int i = 0; i < automaton->size; i++) {
-        printf("%4ld | ", automaton->cells[i].check);
+        printf("%4d | ", automaton->cells[i].check);
     }
     printf("\n");
     for (int i = 0; i < automaton->size; i++) {
-        printf("%4ld | ", automaton->cells[i].fail);
+        printf("%4d | ", automaton->cells[i].fail);
     }
     printf("\n");
     for (int i = 0; i < automaton->size; i++) {
-        printf("%4ld | ", automaton->cells[i].output);
+        printf("%4d | ", automaton->cells[i].output);
     }
     printf("\n\n");
 }

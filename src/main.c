@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include "ac.h"
 #include "dat.h"
-#include "character.h"
+#include "char.h"
 #include "print.h"
 #include "tail.h"
 #include "list.h"
-#include "typedefs.h"
+#include "defs.h"
 #include "file.h"
 
 Needle *safeCreateNeedle(const char *string) {
@@ -47,7 +47,7 @@ int main() {
     Trie *trie = createTrie(options, tailBuilder, 10);
 
     for (size_t i = 0; i < needlesLength; i++) {
-        printf("%s (%lu)\n", utf8Needles[i], needles[i]->length);
+        printf("%s (%u)\n", utf8Needles[i], needles[i]->length);
         trie_addNeedle(trie, needles[i]);
     }
 

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "dat.h"
-#include "memory.h"
+#include "mem.h"
 #include "tail.h"
 #include "list.h"
 
@@ -55,12 +55,6 @@ void trieOptions_free(TrieOptions *options) {
     options = NULL;
 }
 
-
-static void trie_poolInit(Trie *trie, const TrieIndex fromIndex, const TrieIndex toIndex) {
-    for (TrieIndex i = fromIndex; i < toIndex; i++) {
-        trie->cells[i] = (TrieCell) {-(i - 1), -(i + 1), NULL};
-    }
-}
 
 Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex initialSize) {
     if (unlikely(initialSize < 4)) {
@@ -121,6 +115,13 @@ static void trie_setChildren(Trie *trie, const TrieIndex index, List *children) 
     trie->cells[index].children = children;
 }
 
+
+static void trie_poolInit(Trie *trie, const TrieIndex fromIndex, const TrieIndex toIndex) {
+    for (TrieIndex i = fromIndex; i < toIndex; i++) {
+        trie->cells[i] = (TrieCell) {-(i - 1), -(i + 1), NULL};
+    }
+}
+
 static void trie_poolReallocate(Trie *trie, const TrieIndex newSize) {
     trie->cells = safeRealloc(trie->cells, newSize, sizeof(TrieCell), "Trie");
 
@@ -138,6 +139,7 @@ static void trie_poolCheckCapacity(Trie *trie, const TrieIndex index) {
         trie_poolReallocate(trie, (TrieIndex)calculateAllocation(index));
     }
 }
+
 
 static void trie_allocateCell(Trie *trie, const TrieIndex cell) {
     const TrieBase base = trie_getBase(trie, cell);

@@ -1,7 +1,7 @@
 #ifndef AC_H
 #define AC_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 Automaton *createAutomaton(AutomatonIndex initialSize);
 Automaton *createAutomaton_DFS(const Trie *trie, List *list);

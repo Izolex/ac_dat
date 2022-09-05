@@ -1,7 +1,7 @@
 #ifndef PRINT_H
 #define PRINT_H
 
-#include "typedefs.h"
+#include "defs.h"
 
 void list_print(const List *list);
 void tailBuilder_print(const TailBuilder *tailBuilder);

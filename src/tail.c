@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dat.h"
-#include "memory.h"
+#include "mem.h"
 
 
 static void tailBuilder_poolReallocate(TailBuilder *tailBuilder, TailIndex newSize);

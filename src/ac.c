@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "typedefs.h"
+#include "defs.h"
 #include "ac.h"
 #include "list.h"
 #include "dat.h"
 #include "tail.h"
-#include "memory.h"
+#include "mem.h"
 
 
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list);

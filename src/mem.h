@@ -2,7 +2,7 @@
 #define MEMORY_H
 
 #include <stdlib.h>
-#include "typedefs.h"
+#include "defs.h"
 
 void *safeCalloc(size_t count, size_t size, const char *message);
 void *safeMalloc(size_t size, const char *message);
