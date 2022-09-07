@@ -6,7 +6,7 @@
 
 static size_t utf8Length(unsigned char byte);
 static bool utf8Validate(unsigned char byte);
-static Character unicodeFill(unsigned char byte, size_t number, unsigned char shift);
+static Character unicodeFill(unsigned char byte, size_t number, size_t length);
 static Character createCharacter(const char *needle, size_t index, size_t length);
 
 
@@ -39,21 +39,19 @@ static bool utf8Validate(const unsigned char byte) {
     return (byte & ~utf8MaskMap[0]->mask) != utf8MaskMap[0]->lead;
 }
 
-static Character unicodeFill(const unsigned char byte, size_t number, const unsigned char shift) {
-    return (byte & utf8MaskMap[number]->mask) << shift;
+static Character unicodeFill(const unsigned char byte, const size_t number, const size_t length) {
+    return (byte & utf8MaskMap[number]->mask) << (length - number - 1) * utf8MaskMap[0]->bites;
 }
 
 static Character createCharacter(const char *needle, const size_t index, const size_t length) {
-    unsigned char shift = utf8MaskMap[0]->bites * (length - 1);
-    Character unicode = unicodeFill((unsigned char)needle[index], length, shift);
+    Character unicode = unicodeFill((unsigned char)needle[index], length, length * 2);
 
-    for (size_t c = 1; c < length; c++) {
-        if (unlikely(utf8Validate((unsigned char) needle[index + c]))) {
+    for (size_t i = 1; i < length; i++) {
+        if (unlikely(utf8Validate((unsigned char) needle[index + i]))) {
             return 0;
         }
 
-        shift -= utf8MaskMap[0]->bites;
-        unicode |= unicodeFill((unsigned char) needle[index + c], 0, shift);
+        unicode |= unicodeFill((unsigned char) needle[index + i], i, length);
     }
 
     return unicode;
