@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-TrieOptions *createTrieOptions(bool useTail);
+TrieOptions *createTrieOptions(bool useTail, size_t childListInitSize);
 void trieOptions_free(TrieOptions *options);
 
 Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, TrieIndex);

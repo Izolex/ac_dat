@@ -7,9 +7,6 @@
 #include "list.h"
 
 
-#define TRIE_CHILDREN_LIST_INIT_SIZE 4
-
-
 static TrieIndex createState(Character character, TrieBase base);
 static size_t getListSize(const List *list);
 static void trie_setCheck(Trie *trie, TrieIndex index, TrieIndex value);
@@ -42,10 +39,11 @@ static TrieIndex createState(const Character character, const TrieBase base) {
 }
 
 
-TrieOptions *createTrieOptions(const bool useTail) {
+TrieOptions *createTrieOptions(const bool useTail, const size_t childListInitSize) {
     TrieOptions *options = safeMalloc(sizeof(TrieOptions), "TrieOptions");
 
     options->useTail = useTail;
+    options->childListInitSize = childListInitSize;
 
     return options;
 }
@@ -69,7 +67,7 @@ Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex
     trie->size = initialSize;
     trie->cells = safeMalloc(trie->size * sizeof(TrieCell), "Trie cells");
     trie->cells[0] = (TrieCell) {-(initialSize - 1), -2, NULL}; // TRIE_POOL_INFO
-    trie->cells[1] = (TrieCell) {1, 0, createList(TRIE_CHILDREN_LIST_INIT_SIZE)}; // TRIE_POOL_START
+    trie->cells[1] = (TrieCell) {1, 0, createList(options->childListInitSize)}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3, NULL};
 
     trie_poolInit(trie, 3, trie->size);
@@ -181,7 +179,7 @@ static void trie_insertNode(
     List *children = trie_getChildren(trie, check);
 
     if (children == NULL) {
-        children = createList(TRIE_CHILDREN_LIST_INIT_SIZE);
+        children = createList(trie->options->childListInitSize);
         trie_setChildren(trie, check, children);
     }
 
@@ -293,7 +291,7 @@ static TrieIndex trie_collisionInArray(
     if (isBaseCollision) {
         parentIndex = check;
         if (baseChildren == NULL) {
-            baseChildren = createList(TRIE_CHILDREN_LIST_INIT_SIZE);
+            baseChildren = createList(trie->options->childListInitSize);
             trie_setChildren(trie, check, baseChildren);
         }
         list_push(baseChildren, character);

@@ -42,7 +42,7 @@ int main() {
         needles[i] = safeCreateNeedle(utf8Needles[i]);
     }
 
-    TrieOptions *options = createTrieOptions(true);
+    TrieOptions *options = createTrieOptions(true, 4);
     TailBuilder *tailBuilder = createTailBuilder(10);
     Trie *trie = createTrie(options, tailBuilder, 10);
 

@@ -78,6 +78,7 @@ typedef struct {
 
 typedef struct {
     bool useTail: 1;
+    size_t childListInitSize;
 } TrieOptions;
 
 typedef struct {
