@@ -74,15 +74,23 @@ static void automaton_copyCell(Automaton *automaton, const Trie *trie, const Tri
 }
 
 static AutomatonIndex automaton_step(const Automaton *automaton, AutomatonIndex state, const AutomatonTransition transition) {
-    AutomatonIndex nextState;
+    AutomatonIndex nextState, base;
 
-    nextState = createState(transition, automaton_getBase(automaton, state));
-    while (automaton_getCheck(automaton, nextState) != state && state != TRIE_POOL_START) {
-        state = automaton_getFail(automaton, state);
-        nextState = createState(transition, automaton_getBase(automaton, state));
+    base = automaton_getBase(automaton, state);
+    if (base > 0) {
+        nextState = createState(transition, base);
+        while (nextState > 0 && automaton_getCheck(automaton, nextState) != state && state != TRIE_POOL_START) {
+            state = automaton_getFail(automaton, state);
+            nextState = createState(transition, automaton_getBase(automaton, state));
+        }
     }
 
-    nextState = automaton_getBase(automaton, state) + transition;
+    base = automaton_getBase(automaton, state);
+    if (base < 0) {
+        return state;
+    }
+
+    nextState = base + transition;
     if (automaton_getCheck(automaton, nextState) == state) {
         state = nextState;
     }
@@ -151,10 +159,11 @@ static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtai
 
             const AutomatonIndex state = createState(transition, automaton_getBase(automaton, check));
             const AutomatonIndex next = automaton_step(automaton, automaton_getFail(automaton, check), transition);
+            const AutomatonIndex nextBase = automaton_getBase(automaton, next);
 
             automaton_setFail(automaton, state, next);
 
-            if (automaton_getCheck(automaton, automaton_getBase(automaton, next) + END_OF_TEXT) == next) {
+            if (nextBase > 0 && automaton_getCheck(automaton, nextBase + END_OF_TEXT) == next) {
                 automaton_setOutput(automaton, state, next);
             } else {
                 automaton_setOutput(automaton, state, automaton_getOutput(automaton, next));

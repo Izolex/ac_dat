@@ -193,10 +193,12 @@ ListIndex list_push(List *list, const ListValue value) {
 }
 
 ListIndex list_insert(List *list, const ListValue value) {
-    if ((list_getFront(list) == 0 && list_getRear(list) == 0) || list->cells[list_getRear(list)].value < value) {
+    const ListIndex rear = list_getRear(list);
+
+    if ((list_getFront(list) == 0 && rear == 0) || list->cells[rear].value < value) {
         return list_push(list, value);
     }
-    ListIndex from = 0, to = list_getRear(list);
+    ListIndex from = 0, to = rear;
 
     while (from <= to) {
         ListIndex middle = from + ((to - from) / 2);
@@ -209,30 +211,27 @@ ListIndex list_insert(List *list, const ListValue value) {
         }
     }
 
-    if (list_getRear(list) + 1 > list->size - 1) {
-        list_poolReallocate(list);
-    } else if (list_getRear(list) + 1 == list->size - 1) {
+    if (rear + 1 == list->size - 1) {
         list_setFirstLastFree(list, 0, 0);
     } else {
+        if (rear + 1 > list->size - 1) {
+            list_poolReallocate(list);
+        }
+        if (rear + 2 < list->size) {
+            list->cells[rear + 2].prev = 0;
+        }
         list_setFirstFree(list, list->cells[list_getFirstFree(list)].next);
     }
 
-    for (ListIndex i = list_getRear(list); i >= from; i--) {
+    for (ListIndex i = rear; i >= from; i--) {
         list_setCell(list, i + 1, i + 2, i, list->cells[i].value);
     }
 
-    list->cells[list_getRear(list) + 1].next = 0;
+    list->cells[rear + 1].next = 0;
     list->cells[from + 1].prev = from;
-    list->cells[from].value = value;
-    list->cells[from].next = from + 1;
 
-    if (from == list_getFront(list)) {
-        list->cells[from].prev = 0;
-    } else {
-        list->cells[from].prev = from - 1;
-    }
-
-    list_setRear(list, list_getRear(list) + 1);
+    list_setCell(list, from, from + 1, from == list_getFront(list) ? 0 : from - 1, value);
+    list_setRear(list, rear + 1);
 
     return from;
 }
@@ -469,8 +468,7 @@ void list_mergeSort(List *list) {
 }
 
 ListIndex list_binarySearch(const List *list, const ListValue value) {
-    ListIndex from = 0;
-    ListIndex to = list_getRear(list);
+    ListIndex from = 0, to = list_getRear(list);
 
     while (from <= to) {
         const ListIndex middle = from + ((to - from) / 2);

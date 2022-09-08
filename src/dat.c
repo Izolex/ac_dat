@@ -444,7 +444,10 @@ static void trie_collisionInTail(
 
         needleNodeBase = -tailBuilder_insertChars(trie->tailBuilder, tailCharsLength, chars);
     }
-    state = trie_storeCharacter(trie, state, needleNodeBase, needle->characters[needleIndex + commonTailLength + 1]);
+    const NeedleIndex charIndex = needleIndex + commonTailLength + 1;
+    if (charIndex < needle->length) {
+        state = trie_storeCharacter(trie, state, needleNodeBase, needle->characters[charIndex]);
+    }
     if (needleNodeBase > 0) {
         trie_insertEndOfText(trie, state);
     }
