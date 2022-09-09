@@ -67,8 +67,7 @@ TailBuilder *createTailBuilder(const TailIndex size) {
     TailBuilder *tailBuilder = safeMalloc(sizeof(TailBuilder), "TailBuilder");
 
     if (size < 2) {
-        fprintf(stderr, "minimum initial tail size must be at least 2");
-        exit(1);
+        error("minimum initial tail size must be at least 2");
     }
 
     tailBuilder->size = size;

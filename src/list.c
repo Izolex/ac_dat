@@ -238,8 +238,7 @@ ListIndex list_insert(List *list, const ListValue value) {
 
 static void list_ensureNotEmpty(List *list) {
     if (unlikely(list_isEmpty(list))) {
-        fprintf(stderr, "list is empty");
-        exit(EXIT_FAILURE);
+        error("list is empty");
     }
 }
 

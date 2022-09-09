@@ -61,8 +61,7 @@ static AutomatonIndex automaton_getOutput(const Automaton *automaton, const Auto
 static AutomatonIndex createState(const AutomatonTransition transition, const AutomatonIndex base) {
     AutomatonIndex state = 0;
     if (unlikely(add_overflow(transition, base, &state))) {
-        fprintf(stderr, "index reached maximum value");
-        exit(EXIT_FAILURE);
+        error("index reached maximum value");
     }
     return state;
 }

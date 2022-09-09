@@ -10,6 +10,9 @@
 #define TRIE_POOL_START 1
 
 
+#define error(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+
 #ifdef __GNUC__
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)

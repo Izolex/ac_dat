@@ -21,24 +21,21 @@ static Tail *file_loadTail(FILE * restrict file);
 static void safeWrite(const void * restrict pointer, const size_t size, const size_t items, FILE * restrict file) {
     const size_t writtenSize = fwrite(pointer, size, items, file);
     if (unlikely(items != writtenSize)) {
-        fprintf(stderr, "can not write %ld items to file (%ld written)", items, writtenSize);
-        exit(EXIT_FAILURE);
+        error("can not write to file");
     }
 }
 
 static void safeRead(void * restrict pointer, const size_t size, const size_t items, FILE * restrict file) {
     const size_t readSize = fread(pointer, size, items, file);
     if (unlikely(items != readSize)) {
-        fprintf(stderr, "can not read %ld items from file (read %ld)", items, readSize);
-        exit(EXIT_FAILURE);
+        error("can not read from file");
     }
 }
 
 static FILE *safeOpen(const char * filename, const char *mode) {
     FILE *file = fopen(filename, mode);
     if (unlikely(!file)) {
-        fprintf(stderr, "can not open file \"%s\" with mode \"%s\"", filename, mode);
-        exit(EXIT_FAILURE);
+        error("can not open file");
     }
 
     return file;
@@ -46,8 +43,7 @@ static FILE *safeOpen(const char * filename, const char *mode) {
 
 static void safeClose(FILE *file) {
     if (unlikely(0 != fclose(file))) {
-        fprintf(stderr, "can not close file");
-        exit(EXIT_FAILURE);
+        error("can not close file");
     }
 }
 
@@ -123,8 +119,7 @@ static Tail *file_loadTail(FILE * restrict file) {
 
 FileData file_load(const char *targetPath) {
     if (unlikely(0 != access(targetPath, F_OK))) {
-        fprintf(stderr, "File \"%s\" does not exists", targetPath);
-        exit(EXIT_FAILURE);
+        error("file does not exists");
     }
 
     FILE *file = safeOpen(targetPath, "rb");

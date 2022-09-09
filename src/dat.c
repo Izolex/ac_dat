@@ -32,8 +32,7 @@ static TrieIndex trie_storeNeedle(Trie *trie, TrieIndex lastState, const Needle 
 static TrieIndex createState(const Character character, const TrieBase base) {
     TrieIndex state = 0;
     if (unlikely(add_overflow(character, base, &state))) {
-        fprintf(stderr, "index reached maximum value");
-        exit(EXIT_FAILURE);
+        error("index reached maximum value");
     }
     return state;
 }
@@ -56,8 +55,7 @@ void trieOptions_free(TrieOptions *options) {
 
 Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex initialSize) {
     if (unlikely(initialSize < 4)) {
-        fprintf(stderr, "minimum initial DAT size must be at least 4");
-        exit(1);
+        error("minimum initial DAT size must be at least 4");
     }
 
     Trie *trie = safeMalloc(sizeof(Trie), "Trie");
