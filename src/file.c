@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "ac.h"
+#include "file.h"
 #include "tail.h"
 #include "defs.h"
 

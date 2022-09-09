@@ -9,7 +9,11 @@
 #include "defs.h"
 #include "file.h"
 
-Needle *safeCreateNeedle(const char *string) {
+
+static Needle *safeCreateNeedle(const char *string);
+
+
+static Needle *safeCreateNeedle(const char *string) {
     Needle *needle = createNeedle(string);
     if (unlikely(needle == NULL)) {
         fprintf(stderr, "needle is not valid UTF8");
@@ -18,7 +22,7 @@ Needle *safeCreateNeedle(const char *string) {
     return needle;
 }
 
-int main() {
+int main(void) {
     const char *utf8Needles[] = {
 // it is really long when printing trie with these characters
 //            "\xc2\xa5\0", // 2B
