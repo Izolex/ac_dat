@@ -3,6 +3,8 @@
 
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
 
 
 #define END_OF_TEXT 3
@@ -10,8 +12,14 @@
 #define TRIE_POOL_START 1
 
 
-#define error(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+#define unused(...) (void)(0, __VA_ARGS__)
+#define error(msg) do { perror((msg)); exit(EXIT_FAILURE); } while (0)
 
+#ifdef VERBOSE
+#define log(msg) puts((msg))
+#else
+#define log(msg)
+#endif
 
 #ifdef __GNUC__
 #define likely(x) __builtin_expect(!!(x), 1)
