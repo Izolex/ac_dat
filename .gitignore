@@ -1,2 +1,4 @@
+*/client
 cmake-build-debug
-cmake-build-debug-coverage
+CMakeFiles
+Testing

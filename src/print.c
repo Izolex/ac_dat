@@ -1,6 +1,11 @@
 #include <stdio.h>
+#include "ac.h"
 #include "defs.h"
+#include "dat.h"
 #include "print.h"
+#include "list.h"
+#include "tail.h"
+#include "user_data.h"
 
 
 void list_print(const List *list) {

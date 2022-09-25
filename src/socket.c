@@ -10,7 +10,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <signal.h>
-#include "sock.h"
+#include "socket.h"
 #include "defs.h"
 #include "mem.h"
 #include "thread.h"

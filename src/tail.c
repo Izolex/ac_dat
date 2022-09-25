@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "dat.h"
 #include "tail.h"
 #include "mem.h"
 
@@ -20,15 +21,15 @@ static void characters_free(Character *chars) {
 }
 
 
-Tail *createTail(TailIndex size) {
+Tail *createTail(const size_t size) {
     Tail *tail = safeMalloc(sizeof(Tail), "Tail");
-    tail->size = size;
+    tail->size = (TailIndex)size;
     tail->cells = safeMalloc(sizeof(TailCell) * tail->size, "Tail cells");
 
     return tail;
 }
 
-Tail *createTailFromBuilder(TailBuilder *tailBuilder) {
+Tail *createTailFromBuilder(const TailBuilder *tailBuilder) {
     const TailIndex lastFilled = tailBuilder_findLastFilled(tailBuilder);
 
     Tail *tail = createTail(lastFilled + 1);
@@ -63,14 +64,14 @@ static void tailBuilder_poolInit(TailBuilder *tailBuilder, const TailIndex fromI
     }
 }
 
-TailBuilder *createTailBuilder(const TailIndex size) {
+TailBuilder *createTailBuilder(const size_t size) {
     TailBuilder *tailBuilder = safeMalloc(sizeof(TailBuilder), "TailBuilder");
 
     if (size < 2) {
         error("minimum initial tail size must be at least 2");
     }
 
-    tailBuilder->size = size;
+    tailBuilder->size = (TailIndex)size;
     tailBuilder->cells = safeMalloc(tailBuilder->size * sizeof(TailBuilderCell), "TailBuilder cells");
 
     tailBuilder_poolInit(tailBuilder, 0, tailBuilder->size);

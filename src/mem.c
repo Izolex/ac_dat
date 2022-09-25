@@ -10,7 +10,8 @@ static void allocError(const char *message);
 
 
 static void allocError(const char *message) {
-    error(strcat("can not allocate memory for", message));
+    puts(message);
+    error("can not allocate memory");
 }
 
 void *safeMalloc(const size_t size, const char *message) {

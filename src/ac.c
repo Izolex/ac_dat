@@ -216,3 +216,7 @@ bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle
 
     return false;
 }
+
+size_t automaton_getSize(const Automaton *automaton) {
+    return (size_t)automaton->size;
+}

@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
-#include "char.h"
+#include "needle.h"
 #include "mem.h"
 
 
 static size_t utf8Length(unsigned char byte);
 static bool utf8Validate(unsigned char byte);
-static Character unicodeFill(const unsigned char byte, size_t number, const unsigned char shift);
+static Character unicodeFill(unsigned char byte, size_t number, unsigned char shift);
 static Character createCharacter(const char *needle, size_t index, size_t length);
 
 
@@ -92,6 +92,10 @@ Needle *createNeedle(const char *needle) {
     }
 
     return trieNeedle;
+}
+
+size_t needle_getLength(Needle *needle) {
+    return (size_t)needle->length;
 }
 
 void needle_free(Needle *needle) {

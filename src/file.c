@@ -4,6 +4,7 @@
 #include "ac.h"
 #include "file.h"
 #include "tail.h"
+#include "mem.h"
 #include "defs.h"
 
 

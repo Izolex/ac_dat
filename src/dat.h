@@ -1,16 +1,33 @@
 #ifndef DAT_H
 #define DAT_H
 
+#include "../include/dat.h"
 #include "defs.h"
+#include "list.h"
 
-TrieOptions *createTrieOptions(bool useTail, size_t childListInitSize);
-void trieOptions_free(TrieOptions *options);
 
-Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, TrieIndex);
-void trie_free(Trie *trie);
+typedef int32_t TrieIndex, TrieBase;
 
-void trie_addNeedle(Trie *trie, const Needle *needle);
-void trie_find(Trie *trie, Needle *needle);
+typedef struct trieOptions {
+    bool useTail: 1;
+    bool useUserData: 1;
+    size_t childListInitSize;
+} TrieOptions;
+
+typedef struct {
+    TrieBase base;
+    TrieIndex check;
+    struct list *children;
+} TrieCell;
+
+typedef struct trie {
+    TrieOptions *options;
+    TrieCell *cells;
+    TrieIndex size;
+    struct tailBuilder *tailBuilder;
+    struct userDataList *userDataList;
+} Trie;
+
 
 TrieBase trie_getBase(const Trie *trie, TrieIndex index);
 TrieIndex trie_getCheck(const Trie *trie, TrieIndex index);

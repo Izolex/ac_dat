@@ -4,10 +4,11 @@
 #include <string.h>
 #include "defs.h"
 #include "ac.h"
-#include "char.h"
+#include "needle.h"
 #include "mem.h"
-#include "sock.h"
-#include "sock_ac.h"
+#include "tail.h"
+#include "socket.h"
+#include "socket_ac.h"
 
 
 static void safeRead(BufferEvent *bufferEvent, void *data, size_t size);

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "dat.h"
 #include "mem.h"
+#include "needle.h"
 #include "tail.h"
 #include "list.h"
 
@@ -53,7 +54,7 @@ void trieOptions_free(TrieOptions *options) {
 }
 
 
-Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex initialSize) {
+Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const size_t initialSize) {
     if (unlikely(initialSize < 4)) {
         error("minimum initial DAT size must be at least 4");
     }
@@ -62,9 +63,9 @@ Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex
 
     trie->options = options;
     trie->tailBuilder = tailBuilder;
-    trie->size = initialSize;
+    trie->size = (TrieIndex)initialSize;
     trie->cells = safeMalloc(trie->size * sizeof(TrieCell), "Trie cells");
-    trie->cells[0] = (TrieCell) {-(initialSize - 1), -2, NULL}; // TRIE_POOL_INFO
+    trie->cells[0] = (TrieCell) {-(trie->size - 1), -2, NULL}; // TRIE_POOL_INFO
     trie->cells[1] = (TrieCell) {1, 0, createList(options->childListInitSize)}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3, NULL};
 
@@ -73,6 +74,10 @@ Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, const TrieIndex
     trie->cells[initialSize - 1].check = 0;
 
     return trie;
+}
+
+size_t trie_getSize(const Trie *trie) {
+    return (size_t)trie->size;
 }
 
 void trie_free(Trie *trie) {
