@@ -6,8 +6,11 @@
 #include "dat.h"
 #include "tail.h"
 #include "memory.h"
+#include "user_data.h"
 
 
+static Needle *automaton_constructNeedle(const Automaton *automaton, const Tail *tail, AutomatonIndex state);
+static Occurrence *createOccurrence(UserData userData, Needle *needle);
 static Automaton *createAutomatonFromTrie(const Trie *trie, List *list);
 static AutomatonIndex createState(AutomatonTransition transition, AutomatonIndex base);
 static Automaton *buildAutomaton(const Trie *trie, List *list, TrieIndex (*obtainNode)(List *list));
@@ -183,6 +186,61 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
     return buildAutomaton(trie, list, list_shift);
 }
 
+
+static Occurrence *createOccurrence(UserData userData, Needle *needle) {
+    Occurrence *occurrence = safeMalloc(sizeof(Occurrence), "occurrence");
+    occurrence->userData = userData;
+    occurrence->next = NULL;
+    occurrence->needle = needle;
+
+    return occurrence;
+}
+
+void occurrence_free(Occurrence *occurrence) {
+    free(occurrence);
+    occurrence = NULL;
+}
+
+
+static Needle *automaton_constructNeedle(const Automaton *automaton, const Tail *tail, const AutomatonIndex state) {
+    size_t length = 0;
+    AutomatonIndex prev = state;
+    while ((prev = automaton_getCheck(automaton, prev)) > 0) {
+        length++;
+    }
+
+    TailCell tailCell;
+    AutomatonIndex stateBase = automaton_getBase(automaton, state);
+    if (0 > stateBase) {
+        tailCell = tail_getCell(tail, -stateBase);
+        length += tailCell.length;
+    }
+
+    NeedleIndex needleLength = length;
+    Character *characters = safeMalloc(sizeof(Character) * length, "needle characters");
+
+    if (0 > stateBase) {
+        for (TailCharIndex i = tailCell.length; 0 < i; i--, length--) {
+            characters[length - 1] = tailCell.chars[i - 1];
+        }
+    }
+
+    AutomatonIndex actual = state, check, checkBase;
+    while (actual > 1) {
+        check = automaton_getCheck(automaton, actual);
+        checkBase = automaton_getBase(automaton, check);
+        characters[length - 1] = actual - checkBase;
+        length--;
+        actual = check;
+    }
+
+    Needle *needle = safeMalloc(sizeof(Needle), "needle");
+    needle->length = needleLength;
+    needle->characters = characters;
+
+    return needle;
+}
+
 static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex needleIndex, const TailIndex tailIndex) {
     const TailCell tailCell = tail_getCell(tail, tailIndex);
 
@@ -192,29 +250,47 @@ static bool isTail(const Tail *tail, const Needle *needle, const NeedleIndex nee
         c++, t++;
     }
 
-    return c == needle->length && t == tailCell.length;
+    return t == tailCell.length;
 }
 
-bool automaton_search(const Automaton *automaton, const Tail *tail, const Needle *needle) {
+Occurrence *automaton_search(const Automaton *automaton, const Tail *tail, const UserDataList *userDataList, const Needle *needle, SearchMode mode) {
     AutomatonIndex state = TRIE_POOL_START;
+    Occurrence *firstOccurrence = NULL, *lastOccurrence = NULL, *occurrence = NULL;
 
     for (NeedleIndex i = 0; i < needle->length; i++) {
-        const AutomatonTransition transition = (AutomatonTransition)needle->characters[i];
-        AutomatonIndex nextState = state = automaton_step(automaton, state, transition);
+        AutomatonIndex nextState = state = automaton_step(automaton, state, (AutomatonTransition)needle->characters[i]);
 
         while (nextState) {
             const AutomatonIndex base = automaton_getBase(automaton, state);
+            const AutomatonIndex endState = createState(END_OF_TEXT, base);
 
-            if ((base < 0 && isTail(tail, needle, i, -base)) ||
-                automaton_getCheck(automaton, base + END_OF_TEXT) == state) {
-                return true;
+            if ((base > 0 && automaton_getCheck(automaton, endState) == state) ||
+                (base < 0 && isTail(tail, needle, i, -base))) {
+                Needle *foundNeedle = NULL;
+                if (mode & SEARCH_MODE_NEEDLE) {
+                    foundNeedle = automaton_constructNeedle(automaton, tail, state);
+                }
+
+                UserData userData = {0};
+                if (mode & SEARCH_MODE_USER_DATA) {
+                    userData = userDataList_get(userDataList, base < 0 ? state : endState);
+                }
+
+                occurrence = createOccurrence(userData, foundNeedle);
+
+                if (NULL == lastOccurrence) {
+                    firstOccurrence = lastOccurrence = occurrence;
+                    if (mode & SEARCH_MODE_FIRST) goto END;
+                } else {
+                    lastOccurrence->next = occurrence;
+                }
             }
 
             nextState = automaton_getOutput(automaton, nextState);
         }
     }
 
-    return false;
+    END: return firstOccurrence;
 }
 
 size_t automaton_getSize(const Automaton *automaton) {

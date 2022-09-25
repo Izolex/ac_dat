@@ -5,6 +5,7 @@
 #include "file.h"
 #include "tail.h"
 #include "memory.h"
+#include "user_data.h"
 #include "definitions.h"
 
 
@@ -15,8 +16,10 @@ static void safeRead(void * restrict pointer, size_t size, size_t items, FILE * 
 
 static void file_storeAutomaton(FILE * restrict file, const Automaton *automaton);
 static void file_storeTail(FILE * restrict file, const Tail *tail);
+static void file_storeUserDataList(FILE * restrict file, AutomatonIndex size, const UserDataList *userDataList);
 static Automaton *file_loadAutomaton(FILE * restrict file);
 static Tail *file_loadTail(FILE * restrict file);
+static UserDataList *file_loadUserDataList(FILE * restrict file, AutomatonIndex size);
 
 
 static void safeWrite(const void * restrict pointer, const size_t size, const size_t items, FILE * restrict file) {
@@ -75,11 +78,19 @@ static void file_storeTail(FILE * restrict file, const Tail *tail) {
     }
 }
 
-void file_store(const char *targetPath, const Automaton *automaton, const Tail *tail) {
+static void file_storeUserDataList(FILE * restrict file, const AutomatonIndex size, const UserDataList *userDataList) {
+    for (AutomatonIndex i = 0; i < size; i++) {
+        safeWrite((const void *) &userDataList->cells[i].size, sizeof(UserDataSize), 1, file);
+        safeWrite((const void *) userDataList->cells[i].value, 1, userDataList->cells[i].size, file);
+    }
+}
+
+void file_store(const char *targetPath, const Automaton *automaton, const Tail *tail, const UserDataList *userDataList) {
     FILE *file = safeOpen(targetPath, "w+b");
 
     file_storeAutomaton(file, automaton);
     file_storeTail(file, tail);
+    file_storeUserDataList(file, automaton->size, userDataList);
 
     safeClose(file);
 }
@@ -118,6 +129,18 @@ static Tail *file_loadTail(FILE * restrict file) {
     return tail;
 }
 
+static UserDataList *file_loadUserDataList(FILE * restrict file, const AutomatonIndex size) {
+    UserDataList *userDataList = createUserDataList(size);
+
+    for (AutomatonIndex i = 0; i < size; i++) {
+        safeRead((void*) &userDataList->cells[i].size, sizeof(UserDataSize), 1, file);
+        userDataList->cells[i].value = safeMalloc(userDataList->cells[i].size, "user data");
+        safeRead((void*) userDataList->cells[i].value, 1, userDataList->cells[i].size, file);
+    }
+
+    return userDataList;
+}
+
 FileData file_load(const char *targetPath) {
     if (unlikely(0 != access(targetPath, F_OK))) {
         error("file does not exists");
@@ -125,7 +148,10 @@ FileData file_load(const char *targetPath) {
 
     FILE *file = safeOpen(targetPath, "rb");
 
-    const FileData fileData = (FileData) {file_loadAutomaton(file), file_loadTail(file)};
+    FileData fileData;
+    fileData.automaton = file_loadAutomaton(file);
+    fileData.tail = file_loadTail(file);
+    fileData.userDataList = file_loadUserDataList(file, fileData.automaton->size);
 
     safeClose(file);
 

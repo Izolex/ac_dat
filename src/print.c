@@ -109,3 +109,16 @@ void automaton_print(const Automaton *automaton) {
     }
     printf("\n\n");
 }
+
+
+void userDataList_print(const size_t size, const UserDataList *userDataList) {
+    printf("\n");
+    for (size_t i = 0; i < size; i++) {
+        printf("%4ld | ", i);
+    }
+    printf("\n");
+    for (size_t i = 0; i < size; i++) {
+        printf("%4u | ", userDataList->cells[i].size);
+    }
+    printf("\n\n");
+}
