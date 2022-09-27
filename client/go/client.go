@@ -13,8 +13,9 @@ type SearchMode uint8
 
 const (
 	SearchModeFirst    = 0b00000001
-	SearchModeNeedle   = 0b00000010
-	SearchModeUserData = 0b00000100
+	SearchModeExact    = 0b00000010
+	SearchModeNeedle   = 0b00000100
+	SearchModeUserData = 0b00001000
 
 	UserDataSizeTypeSize = 4
 )

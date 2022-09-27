@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const defaultSearchMode = ac_dat_client.SearchModeFirst | ac_dat_client.SearchModeNeedle | ac_dat_client.SearchModeUserData
+const defaultSearchMode = ac_dat_client.SearchModeFirst | ac_dat_client.SearchModeExact | ac_dat_client.SearchModeNeedle | ac_dat_client.SearchModeUserData
 
 var flagEndian = flag.String("e", "little", "endian (little,big)")
 var flagNetwork = flag.String("n", "tcp", "network (unix|tcp)")
