@@ -4,7 +4,6 @@
 #include <string.h>
 #include "definitions.h"
 #include "ac.h"
-#include "needle.h"
 #include "memory.h"
 #include "tail.h"
 #include "socket.h"
@@ -17,11 +16,11 @@ static void safeWrite(BufferEvent *bufferEvent, const void *data, size_t size);
 static SearchMode readSearchMode(BufferEvent *bufferEvent);
 static Needle *readNeedle(BufferEvent *bufferEvent);
 
-static void writeNeedle(BufferEvent *bufferEvent, const Needle *needle);
-static void writeUserDataSize(BufferEvent *bufferEvent, const Occurrence *occurrence);
-static void writeUserDataValue(BufferEvent *bufferEvent, const Occurrence *occurrence);
+static inline void writeNeedle(BufferEvent *bufferEvent, const Occurrence *occurrence);
+static inline void writeUserDataSize(BufferEvent *bufferEvent, const Occurrence *occurrence);
+static inline void writeUserDataValue(BufferEvent *bufferEvent, const Occurrence *occurrence);
+static inline void writeNoOccurrence(BufferEvent *bufferEvent);
 static void writeOccurrence(BufferEvent *bufferEvent, SearchMode mode, Occurrence * restrict occurrence);
-static void writeNoOccurrence(BufferEvent *bufferEvent);
 
 
 HandlerData *createHandlerData(const Automaton *automaton, const Tail *tail, const UserDataList *userDataList) {
@@ -62,28 +61,29 @@ static Needle *readNeedle(BufferEvent *bufferEvent) {
     int32_t needleLength = 0;
     safeRead(bufferEvent, &needleLength, sizeof(needleLength));
 
-    char characters[needleLength + 1];
+    Needle *characters = safeMalloc(sizeof(char) * (needleLength + 1), "AC search needle");
     safeRead(bufferEvent, characters, (size_t)needleLength);
 
     characters[needleLength] = '\0';
-    return createNeedle(characters);
+    return characters;
 }
 
 
-static void writeNeedle(BufferEvent *bufferEvent, const Needle *needle) {
-    safeWrite(bufferEvent, &needle->length, sizeof(NeedleIndex));
-    safeWrite(bufferEvent, needle->characters, sizeof(Character) * needle->length);
+static inline void writeNeedle(BufferEvent *bufferEvent, const Occurrence *occurrence) {
+    const int needleLength = occurrence_getNeedleLength(occurrence);
+    safeWrite(bufferEvent, &needleLength, sizeof(needleLength));
+    safeWrite(bufferEvent, occurrence_getNeedle(occurrence), needleLength);
 }
 
-static void writeUserDataSize(BufferEvent *bufferEvent, const Occurrence *occurrence) {
+static inline void writeUserDataSize(BufferEvent *bufferEvent, const Occurrence *occurrence) {
     safeWrite(bufferEvent, (const void *) &occurrence->userData.size, sizeof(UserDataSize));
 }
 
-static void writeUserDataValue(BufferEvent *bufferEvent, const Occurrence *occurrence) {
+static inline void writeUserDataValue(BufferEvent *bufferEvent, const Occurrence *occurrence) {
     safeWrite(bufferEvent, (const void *) occurrence->userData.value, occurrence->userData.size);
 }
 
-static void writeNoOccurrence(BufferEvent *bufferEvent) {
+static inline void writeNoOccurrence(BufferEvent *bufferEvent) {
     safeWrite(bufferEvent, (const void *) &(UserDataSize){-1}, sizeof(UserDataSize));
 }
 
@@ -100,8 +100,8 @@ static void writeOccurrence(BufferEvent *bufferEvent, const SearchMode mode, Occ
             writeUserDataValue(bufferEvent, occurrence);
         }
         if (mode & SEARCH_MODE_NEEDLE) {
-            writeNeedle(bufferEvent, occurrence->needle);
-            needle_free(occurrence->needle);
+            writeNeedle(bufferEvent, occurrence);
+            free(occurrence->needle.needle);
         }
         if (!(mode & SEARCH_MODE_FIRST)) {
             if (NULL == occurrence->next) {
@@ -128,5 +128,5 @@ void ahoCorasickHandler(BufferEvent *bufferEvent, void *handlerContext) {
     Occurrence *occurrence = automaton_search(data->automaton, data->tail, data->userDataList, needle, mode);
     writeOccurrence(bufferEvent, mode, occurrence);
 
-    needle_free(needle);
+    free(needle);
 }

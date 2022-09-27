@@ -18,7 +18,7 @@ struct trie *createTrie(struct trieOptions *options, struct tailBuilder *tailBui
 size_t trie_getSize(const struct trie *trie);
 void trie_free(struct trie *trie);
 
-void trie_addNeedle(struct trie *trie, const struct needle *needle);
-void trie_addNeedleWithData(struct trie *trie, const struct needle *needle, struct userData data);
+void trie_addNeedle(struct trie *trie, const struct trieNeedle *needle);
+void trie_addNeedleWithData(struct trie *trie, const struct trieNeedle *needle, struct userData data);
 
 #endif

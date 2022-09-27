@@ -16,7 +16,6 @@ const (
 	SearchModeNeedle   = 0b00000010
 	SearchModeUserData = 0b00000100
 
-	CharacterTypeSize    = 4
 	UserDataSizeTypeSize = 4
 )
 
@@ -99,9 +98,9 @@ func (c *client) Occurrence(mode SearchMode, timeout time.Time) (firstOccurrence
 		}
 
 		if 0 < mode&SearchModeNeedle {
-			c.read(CharacterTypeSize, &occurrence.NeedleLength)
-			occurrence.Needle = make([]byte, occurrence.NeedleLength*4)
-			c.read(occurrence.NeedleLength*CharacterTypeSize, occurrence.Needle)
+			c.read(4, &occurrence.NeedleLength)
+			occurrence.Needle = make([]byte, occurrence.NeedleLength)
+			c.read(occurrence.NeedleLength, occurrence.Needle)
 		}
 
 		if firstOccurrence == nil {

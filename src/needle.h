@@ -3,11 +3,18 @@
 
 #include "../include/needle.h"
 
-typedef u_int32_t NeedleIndex;
+typedef u_int32_t TrieNeedleIndex;
 
-typedef struct needle {
+typedef struct trieNeedle {
     Character *characters;
-    NeedleIndex length;
-} Needle;
+    TrieNeedleIndex length;
+} TrieNeedle;
+
+
+int utf8Length(unsigned char firstByte);
+int unicodeLength(Character unicode);
+
+void unicodeToUtf8(Character unicode, int length, char *output, int outputStart);
+Character utf8ToUnicode(const char *needle, int index, int length);
 
 #endif

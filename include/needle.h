@@ -3,12 +3,14 @@
 
 
 typedef int32_t Character;
+typedef char Needle;
 
-struct needle;
+struct trieNeedle;
 
 
-struct needle *createNeedle(const char *needle);
-size_t needle_getLength(struct needle *needle);
-void needle_free(struct needle *needle);
+struct trieNeedle *createTrieNeedle(const char *needle);
+size_t trieNeedle_getLength(const struct trieNeedle *needle);
+void trieNeedle_free(struct trieNeedle *needle);
+void needle_free(Needle *needle);
 
 #endif

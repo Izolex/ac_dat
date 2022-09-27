@@ -21,9 +21,12 @@ struct occurrence *automaton_search(
     const struct automaton *automaton,
     const struct tail *tail,
     const struct userDataList *userDataList,
-    const struct needle *needle,
+    const char *needle,
     enum searchMode mode
 );
+
+char *occurrence_getNeedle(const struct occurrence *occurrence);
+int occurrence_getNeedleLength(const struct occurrence *occurrence);
 
 struct automaton *createAutomaton_DFS(const struct trie *trie, struct list *list);
 struct automaton *createAutomaton_BFS(const struct trie *trie, struct list *list);

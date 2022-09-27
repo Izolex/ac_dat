@@ -16,9 +16,14 @@ typedef struct automaton {
     AutomatonCell *cells;
 } Automaton;
 
+typedef struct {
+    char *needle;
+    int length;
+} FoundNeedle;
+
 typedef struct occurrence {
     struct occurrence *next;
-    struct needle *needle;
+    FoundNeedle needle;
     UserData userData;
 } Occurrence;
 typedef enum searchMode SearchMode;

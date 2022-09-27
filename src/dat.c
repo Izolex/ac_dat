@@ -21,17 +21,17 @@ static void trie_allocateCell(Trie *trie, TrieIndex cell);
 static void trie_freeCell(Trie *trie, TrieIndex cell);
 static void trie_insertNode(Trie *trie, TrieIndex state, TrieBase base, TrieIndex check);
 static void trie_insertEndOfText(Trie *trie, TrieIndex check, UserData userData);
-static void trie_insertBranch(Trie *trie, TrieIndex state, TrieIndex check, const Needle *needle, NeedleIndex needleIndex, UserData userData);
-static void trie_collisionInTail(Trie *trie, TrieIndex state, const Needle *needle, NeedleIndex needleIndex, UserData userData);
-static void trie_collisionInTail_needle(Trie *trie, TrieIndex state, const Needle *needle, NeedleIndex needleIndex, TailCharIndex tailIterator, UserData userData);
-static void trie_collisionInTail_tail(Trie *trie, TrieIndex state, TrieIndex tailIndex, TailCharIndex tailIterator, UserData userData);
-static TrieIndex trie_collisionInTail_common(Trie *trie, TrieIndex state, TailCharIndex commonTail, TailBuilderCell tailBuilderCell);
+static void trie_insertBranch(Trie *trie, TrieIndex state, TrieIndex check, const TrieNeedle *needle, TrieNeedleIndex needleIndex, UserData userData);
+static void trie_collisionInTail(Trie *trie, TrieIndex state, const TrieNeedle *needle, TrieNeedleIndex needleIndex, UserData userData);
+static inline TrieIndex trie_collisionInTail_needle(Trie *trie, TrieIndex state, const TrieNeedle *needle, TrieNeedleIndex needleIndex, UserData userData);
+static inline TrieIndex trie_collisionInTail_tail(Trie *trie, TrieIndex state, TrieIndex tailIndex, TailCharIndex tailIterator, UserData userData);
+static inline TrieIndex trie_collisionInTail_common(Trie *trie, TrieIndex state, TailCharIndex commonTail, TailBuilderCell tailBuilderCell);
 static TrieIndex trie_collisionInArray(Trie *trie, TrieIndex state, TrieBase base, TrieIndex check, Character character);
 static TrieIndex trie_moveBase(Trie *trie, TrieBase oldBase, TrieBase freeBase, TrieIndex check, TrieIndex state);
 static TrieIndex trie_findEmptyCell(const Trie *trie, TrieIndex node);
 static TrieIndex trie_findFreeBase(const Trie *trie, TrieIndex node);
 static TrieIndex trie_storeCharacter(Trie *trie, TrieIndex lastState, TrieBase newNodeBase, Character character);
-static TrieIndex trie_storeNeedle(Trie *trie, TrieIndex lastState, const Needle *needle, NeedleIndex needleIndex, UserData userData);
+static TrieIndex trie_storeNeedle(Trie *trie, TrieIndex lastState, const TrieNeedle *needle, TrieNeedleIndex needleIndex, UserData userData);
 
 
 const UserData emptyUserData = {0};
@@ -164,7 +164,7 @@ static void trie_allocateCell(Trie *trie, const TrieIndex cell) {
     trie_setCheck(trie, -base, check);
 }
 
-void trie_freeCell(Trie *trie, const TrieIndex cell) {
+static void trie_freeCell(Trie *trie, const TrieIndex cell) {
     TrieIndex next = -trie_getCheck(trie, TRIE_POOL_START);
     while (likely(next != TRIE_POOL_START && next < cell)) {
         next = -trie_getCheck(trie, next);
@@ -359,8 +359,8 @@ static TrieIndex trie_storeCharacter(
 static TrieIndex trie_storeNeedle(
         Trie *trie,
         const TrieIndex lastState,
-        const Needle *needle,
-        const NeedleIndex needleIndex,
+        const TrieNeedle *needle,
+        const TrieNeedleIndex needleIndex,
         const UserData userData
 ) {
     const TrieBase lastBase = trie_getBase(trie, lastState);
@@ -399,8 +399,8 @@ static void trie_insertBranch(
         Trie *trie,
         const TrieIndex state,
         const TrieIndex check,
-        const Needle *needle,
-        const NeedleIndex needleIndex,
+        const TrieNeedle *needle,
+        const TrieNeedleIndex needleIndex,
         const UserData userData
 ) {
     TrieBase newNodeBase = 1;
@@ -410,7 +410,7 @@ static void trie_insertBranch(
         Character *chars = allocateCharacters(tailCharsLength);
 
         TailCharIndex c = 0;
-        NeedleIndex i = needleIndex + 1;
+        TrieNeedleIndex i = needleIndex + 1;
         for (; i < needle->length; i++, c++) {
             chars[c] = needle->characters[i];
         }
@@ -426,7 +426,7 @@ static void trie_insertBranch(
 }
 
 
-static TrieIndex trie_collisionInTail_common(
+static inline TrieIndex trie_collisionInTail_common(
         Trie *trie,
         const TrieIndex state,
         const TailCharIndex commonTail,
@@ -441,39 +441,43 @@ static TrieIndex trie_collisionInTail_common(
     return nextState;
 }
 
-static void trie_collisionInTail_needle(
+static inline TrieIndex trie_collisionInTail_needle(
         Trie *trie,
         const TrieIndex state,
-        const Needle *needle,
-        const NeedleIndex needleIndex,
-        const TailCharIndex tailIterator,
+        const TrieNeedle *needle,
+        const TrieNeedleIndex needleIndex,
         const UserData userData
 ) {
-    Character nextCharacter = (Character)(needleIndex + tailIterator - 1);
-    NeedleIndex leftCharacters = needle->length - nextCharacter;
+    const TrieNeedleIndex leftCharacters = needle->length - needleIndex;
+    TrieIndex endState = state, newState = state;
+    TrieBase newBase = 1;
 
-    if (1 <= leftCharacters) {
-        TrieBase newBase = 1;
-        if (1 < leftCharacters) {
-            Character *chars = allocateCharacters(leftCharacters - 1);
+    if (1 < leftCharacters) {
+        Character *chars = allocateCharacters(leftCharacters - 1);
 
-            TailCharIndex c = 0;
-            NeedleIndex i = needleIndex + tailIterator;
-            for (; i < needle->length; i++, c++) {
-                chars[c] = needle->characters[i];
-            }
-
-            newBase = -tailBuilder_insertChars(trie->tailBuilder, leftCharacters - 1, chars);
+        TailCharIndex c = 0;
+        TrieNeedleIndex i = needleIndex + 1;
+        for (; i < needle->length; i++, c++) {
+            chars[c] = needle->characters[i];
         }
 
-        TrieIndex newState = trie_storeCharacter(trie, state, newBase,needle->characters[nextCharacter]);
-        userDataList_set(trie->userDataList, newState, userData);
-    } else {
-        trie_insertEndOfText(trie, state, userData);
+        newBase = -tailBuilder_insertChars(trie->tailBuilder, leftCharacters - 1, chars);
     }
+
+    if (1 <= leftCharacters) {
+        endState = trie_storeCharacter(trie, state, newBase,needle->characters[needleIndex]);
+        newState = trie_getCheck(trie, endState);
+        userDataList_set(trie->userDataList, endState, userData);
+    }
+
+    if (1 >= leftCharacters) {
+        trie_insertEndOfText(trie, endState, userData);
+    }
+
+    return newState;
 }
 
-static void trie_collisionInTail_tail(
+static inline TrieIndex trie_collisionInTail_tail(
         Trie *trie,
         const TrieIndex state,
         const TrieIndex tailIndex,
@@ -481,34 +485,40 @@ static void trie_collisionInTail_tail(
         const UserData userData
 ) {
     const TailBuilderCell tailBuilderCell = trie->tailBuilder->cells[tailIndex];
-    NeedleIndex leftCharacters = tailBuilderCell.length - tailIterator;
+    const TrieNeedleIndex leftCharacters = tailBuilderCell.length - tailIterator;
+    TrieIndex endState = state, newState = state;
+    TrieBase newBase = 1;
 
-    if (1 <= leftCharacters) {
-        TrieBase newBase = 1;
-        if (1 < leftCharacters) {
-            Character *chars = allocateCharacters(leftCharacters - 1);
+    if (1 < leftCharacters) {
+        Character *chars = allocateCharacters(leftCharacters - 1);
 
-            TailCharIndex c = 0;
-            NeedleIndex i = tailIterator + 1;
-            for (; i < tailBuilderCell.length; i++, c++) {
-                chars[c] = tailBuilderCell.chars[i];
-            }
-
-            newBase = -tailBuilder_insertChars(trie->tailBuilder, leftCharacters - 1, chars);
+        TailCharIndex c = 0;
+        TrieNeedleIndex i = tailIterator + 1;
+        for (; i < tailBuilderCell.length; i++, c++) {
+            chars[c] = tailBuilderCell.chars[i];
         }
 
-        TrieIndex newState = trie_storeCharacter(trie, state, newBase, tailBuilderCell.chars[tailIterator]);
-        userDataList_set(trie->userDataList, newState, userData);
-    } else {
-        trie_insertEndOfText(trie, state, userData);
+        newBase = -tailBuilder_insertChars(trie->tailBuilder, leftCharacters - 1, chars);
     }
+
+    if (1 <= leftCharacters) {
+        endState = trie_storeCharacter(trie, state, newBase, tailBuilderCell.chars[tailIterator]);
+        newState = trie_getCheck(trie, endState);
+        userDataList_set(trie->userDataList, endState, userData);
+    }
+
+    if (1 >= leftCharacters) {
+        trie_insertEndOfText(trie, endState, userData);
+    }
+
+    return newState;
 }
 
 static void trie_collisionInTail(
         Trie *trie,
         const TrieIndex state,
-        const Needle *needle,
-        const NeedleIndex needleIndex,
+        const TrieNeedle *needle,
+        const TrieNeedleIndex needleIndex,
         const UserData userData
 ) {
     UserData stateUserData;
@@ -520,7 +530,7 @@ static void trie_collisionInTail(
 
 
     TailCharIndex tailIterator = 0;
-    NeedleIndex needleIterator = needleIndex + 1;
+    TrieNeedleIndex needleIterator = needleIndex + 1;
     while (tailIterator < tailBuilderCell.length
         && needleIterator < needle->length
         && tailBuilderCell.chars[tailIterator] == needle->characters[needleIterator]
@@ -535,7 +545,7 @@ static void trie_collisionInTail(
 
     trie_setBase(trie, state, 1);
     TrieIndex nextState = trie_collisionInTail_common(trie, state, tailIterator, tailBuilderCell);
-    trie_collisionInTail_needle(trie, nextState, needle, needleIterator, tailIterator, userData);
+    nextState = trie_collisionInTail_needle(trie, nextState, needle, needleIterator, userData);
     trie_collisionInTail_tail(trie, nextState, tailIndex, tailIterator, stateUserData);
 
 
@@ -543,10 +553,10 @@ static void trie_collisionInTail(
 }
 
 
-void trie_addNeedle(Trie *trie, const Needle *needle) {
+void trie_addNeedle(Trie *trie, const TrieNeedle *needle) {
     TrieIndex lastState = TRIE_POOL_START;
 
-    for (NeedleIndex i = 0; i < needle->length; i++) {
+    for (TrieNeedleIndex i = 0; i < needle->length; i++) {
         lastState = trie_storeNeedle(trie, lastState, needle, i, emptyUserData);
         if (0 == lastState) {
             return;
@@ -556,10 +566,10 @@ void trie_addNeedle(Trie *trie, const Needle *needle) {
     trie_insertEndOfText(trie, lastState, emptyUserData);
 }
 
-void trie_addNeedleWithData(Trie *trie, const Needle *needle, UserData data) {
+void trie_addNeedleWithData(Trie *trie, const TrieNeedle *needle, UserData data) {
     TrieIndex lastState = TRIE_POOL_START;
 
-    for (NeedleIndex i = 0; i < needle->length; i++) {
+    for (TrieNeedleIndex i = 0; i < needle->length; i++) {
         lastState = trie_storeNeedle(trie, lastState, needle, i, data);
         if (0 == lastState) {
             return;
