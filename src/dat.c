@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "dat.h"
-#include "mem.h"
+#include "memory.h"
 #include "needle.h"
 #include "tail.h"
 #include "list.h"

@@ -6,7 +6,7 @@
 #include "print.h"
 #include "tail.h"
 #include "list.h"
-#include "defs.h"
+#include "definitions.h"
 #include "file.h"
 
 

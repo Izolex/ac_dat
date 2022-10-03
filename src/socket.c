@@ -11,8 +11,8 @@
 #include <dirent.h>
 #include <signal.h>
 #include "socket.h"
-#include "defs.h"
-#include "mem.h"
+#include "definitions.h"
+#include "memory.h"
 #include "thread.h"
 
 

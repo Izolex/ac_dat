@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "ac.h"
-#include "defs.h"
+#include "definitions.h"
 #include "dat.h"
 #include "print.h"
 #include "list.h"

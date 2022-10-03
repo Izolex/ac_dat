@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "list.h"
-#include "mem.h"
+#include "memory.h"
 
 
 static ListIndex list_getFirstFree(const List *list);

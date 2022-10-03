@@ -2,7 +2,7 @@
 #define THREAD_H
 
 #include "../include/thread.h"
-#include "defs.h"
+#include "definitions.h"
 
 typedef struct job {
     void *userData;

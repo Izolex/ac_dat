@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include "defs.h"
-#include "mem.h"
+#include "definitions.h"
+#include "memory.h"
 #include "thread.h"
 
 

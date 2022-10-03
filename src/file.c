@@ -4,8 +4,8 @@
 #include "ac.h"
 #include "file.h"
 #include "tail.h"
-#include "mem.h"
-#include "defs.h"
+#include "memory.h"
+#include "definitions.h"
 
 
 static FILE *safeOpen(const char *filename, const char *mode);

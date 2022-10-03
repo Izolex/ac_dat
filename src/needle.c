@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "needle.h"
-#include "mem.h"
+#include "memory.h"
 
 
 static size_t utf8Length(unsigned char byte);

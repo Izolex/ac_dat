@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include "mem.h"
-#include "defs.h"
+#include "memory.h"
+#include "definitions.h"
 
 
 static void allocError(const char *message);

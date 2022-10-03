@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "defs.h"
+#include "definitions.h"
 #include "ac.h"
 #include "needle.h"
-#include "mem.h"
+#include "memory.h"
 #include "tail.h"
 #include "socket.h"
 #include "socket_ac.h"
