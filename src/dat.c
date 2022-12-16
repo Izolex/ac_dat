@@ -253,13 +253,17 @@ static TrieIndex trie_moveBase(
     TrieIndex nextState = state;
     const List *checkChildren = trie_getChildren(trie, check);
 
+    UserData charUserData;
     ListIndex checkListIndex = list_iterate(checkChildren, 0);
     while (likely(checkListIndex > 0)) {
         const Character character = list_getValue(checkChildren, checkListIndex);
         const TrieIndex charIndex = createState(character, oldBase);
         const TrieBase charBase = trie_getBase(trie, charIndex);
-        const UserData charUserData = userDataList_get(trie->userDataList, charIndex);
         const TrieIndex newCharIndex = createState(character, freeBase);
+
+        if (trie->options->useUserData) {
+            charUserData = userDataList_get(trie->userDataList, charIndex);
+        }
 
         if (charIndex == nextState) {
             nextState = newCharIndex;
@@ -278,13 +282,14 @@ static TrieIndex trie_moveBase(
         List *nodeChildren = trie_getChildren(trie, charIndex);
 
         trie_setChildren(trie, charIndex, NULL);
-        userDataList_set(trie->userDataList, charIndex, (UserData){NULL, 0});
-
         trie_freeCell(trie, charIndex);
         trie_insertNode(trie, newCharIndex, charBase, check);
-
-        userDataList_set(trie->userDataList, newCharIndex, charUserData);
         trie_setChildren(trie, newCharIndex, nodeChildren);
+
+        if (trie->options->useUserData) {
+            userDataList_set(trie->userDataList, charIndex, (UserData){NULL, 0});
+            userDataList_set(trie->userDataList, newCharIndex, charUserData);
+        }
 
         checkListIndex = list_iterate(checkChildren, checkListIndex);
     }
