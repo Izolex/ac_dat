@@ -22,20 +22,16 @@ void *safeMalloc(const size_t size, const char *message) {
     return pointer;
 }
 
-void *safeCalloc(const size_t count, const size_t size, const char *message) {
-    void *pointer = calloc(count, size);
-    if (unlikely(!pointer)) {
-        allocError(message);
-    }
-    return pointer;
-}
-
 void *safeRealloc(void *pointer, const size_t count, const size_t size, const char *message) {
     pointer = realloc(pointer, count * size);
     if (unlikely(!pointer)) {
         allocError(message);
     }
     return pointer;
+}
+
+void resetMemory(void *pointer, const size_t size) {
+    bzero(pointer, size);
 }
 
 size_t calculateAllocation(const size_t size) {

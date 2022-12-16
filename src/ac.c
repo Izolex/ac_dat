@@ -113,10 +113,13 @@ void automaton_free(Automaton *automaton) {
 }
 
 Automaton *createAutomaton(const AutomatonIndex initialSize) {
-    Automaton *automaton = safeCalloc(1, sizeof(Automaton), "AC automaton");
+    Automaton *automaton = safeMalloc(sizeof(Automaton), "AC automaton");
+
+    size_t cellsSize = initialSize * sizeof(AutomatonCell);
 
     automaton->size = initialSize;
-    automaton->cells = safeCalloc(initialSize, sizeof(AutomatonCell), "AC automaton cells");
+    automaton->cells = safeMalloc(cellsSize, "AC automaton cells");
+    resetMemory(automaton->cells, cellsSize);
 
     return automaton;
 }
