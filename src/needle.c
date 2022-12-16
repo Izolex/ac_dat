@@ -94,7 +94,7 @@ Character utf8ToUnicode(const char *needle, const int index, const int length) {
 
 
 TrieNeedle *createTrieNeedle(const char *needle) {
-    TrieNeedle *trieNeedle = safeMalloc(sizeof(TrieNeedle), "needle");
+    TrieNeedle *trieNeedle = safeAlloc(sizeof(TrieNeedle), "needle");
     trieNeedle->length = 0;
     int index, length;
 
@@ -110,7 +110,7 @@ TrieNeedle *createTrieNeedle(const char *needle) {
         trieNeedle->length++;
     }
 
-    trieNeedle->characters = safeMalloc(trieNeedle->length * sizeof(Character), "needle characters");
+    trieNeedle->characters = safeAlloc(trieNeedle->length * sizeof(Character), "needle characters");
 
     index = 0;
     for (TrieNeedleIndex i = 0; i < trieNeedle->length; i++) {

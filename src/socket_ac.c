@@ -24,7 +24,7 @@ static void writeOccurrence(BufferEvent *bufferEvent, SearchMode mode, Occurrenc
 
 
 HandlerData *createHandlerData(const Automaton *automaton, const Tail *tail, const UserDataList *userDataList) {
-    HandlerData *data = safeMalloc(sizeof(HandlerData), "handler data");
+    HandlerData *data = safeAlloc(sizeof(HandlerData), "handler data");
     data->automaton = automaton;
     data->tail = tail;
     data->userDataList = userDataList;
@@ -61,7 +61,7 @@ static Needle *readNeedle(BufferEvent *bufferEvent) {
     int32_t needleLength = 0;
     safeRead(bufferEvent, &needleLength, sizeof(needleLength));
 
-    Needle *characters = safeMalloc(sizeof(char) * (needleLength + 1), "AC search needle");
+    Needle *characters = safeAlloc(sizeof(char) * (needleLength + 1), "AC search needle");
     safeRead(bufferEvent, characters, (size_t)needleLength);
 
     characters[needleLength] = '\0';

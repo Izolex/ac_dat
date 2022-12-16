@@ -8,8 +8,8 @@ UserData createUserData(const UserDataSize size, UserDataValue *value) {
 }
 
 UserDataList *createUserDataList(const size_t initialSize) {
-    UserDataList *userDataList = safeMalloc(sizeof(UserDataList), "user data");
-    userDataList->cells = safeMalloc(sizeof(UserData) * initialSize, "user data cells");
+    UserDataList *userDataList = safeAlloc(sizeof(UserDataList), "user data");
+    userDataList->cells = safeAlloc(sizeof(UserData) * initialSize, "user data cells");
     memset(userDataList->cells, 0, sizeof(UserData) * initialSize);
 
     return userDataList;

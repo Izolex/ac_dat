@@ -51,7 +51,7 @@ void socketJobHandler(void * restrict userData) {
 
 
 static SocketInfo *createSocketInfo(const socklen_t length, struct sockaddr *address) {
-    SocketInfo *info = safeMalloc(sizeof(SocketInfo), "socket info");
+    SocketInfo *info = safeAlloc(sizeof(SocketInfo), "socket info");
     info->length = length;
     info->address = address;
 
@@ -59,7 +59,7 @@ static SocketInfo *createSocketInfo(const socklen_t length, struct sockaddr *add
 }
 
 SocketInfo *createUnixSocketInfo(const char path[104]) {
-    struct sockaddr_un *address = safeMalloc(sizeof(struct sockaddr_un), "unix socket");
+    struct sockaddr_un *address = safeAlloc(sizeof(struct sockaddr_un), "unix socket");
     memset(address, 0, sizeof(struct sockaddr_un));
 
     address->sun_family = AF_UNIX;
@@ -70,7 +70,7 @@ SocketInfo *createUnixSocketInfo(const char path[104]) {
 }
 
 SocketInfo *createTCPSocketInfo(const int port) {
-    struct sockaddr_in *address = safeMalloc(sizeof(struct sockaddr_in), "internet socket");
+    struct sockaddr_in *address = safeAlloc(sizeof(struct sockaddr_in), "internet socket");
     memset(address, 0, sizeof(struct sockaddr_in));
 
     address->sin_family = AF_INET;
@@ -87,7 +87,7 @@ void socketInfo_free(SocketInfo *pointer) {
 
 
 static JobContext *createJobContext(EventBase *base, const ServerConfig *config) {
-    JobContext *context = safeMalloc(sizeof(JobContext), "job context");
+    JobContext *context = safeAlloc(sizeof(JobContext), "job context");
     context->base = base;
     context->config = config;
 
@@ -99,7 +99,7 @@ static void jobContext_free(JobContext *context) {
 }
 
 static HandlerContext *createHandlerContext(EventBase *base, void *handlerData) {
-    HandlerContext *context = safeMalloc(sizeof(HandlerContext), "handler context");
+    HandlerContext *context = safeAlloc(sizeof(HandlerContext), "handler context");
     context->handlerData = handlerData;
     context->base = base;
 
@@ -221,7 +221,7 @@ ServerConfig *createServerConfig(
     Handler *handler,
     void *handlerData
 ) {
-    ServerConfig *config = safeMalloc(sizeof(ServerConfig), "server config");
+    ServerConfig *config = safeAlloc(sizeof(ServerConfig), "server config");
     config->backlog = backlog;
     config->clientTimeout = clientTimeout;
     config->serverTimeout = serverTimeout;
@@ -237,7 +237,7 @@ void serverConfig_free(ServerConfig *config) {
 
 
 Server *createServer(const ServerConfig *config, WorkerPool *pool) {
-    Server *server = safeMalloc(sizeof(Server), "server");
+    Server *server = safeAlloc(sizeof(Server), "server");
     server->config = config;
     server->pool = pool;
     server->base = createEventBase();

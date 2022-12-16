@@ -113,12 +113,12 @@ void automaton_free(Automaton *automaton) {
 }
 
 Automaton *createAutomaton(const AutomatonIndex initialSize) {
-    Automaton *automaton = safeMalloc(sizeof(Automaton), "AC automaton");
+    Automaton *automaton = safeAlloc(sizeof(Automaton), "AC automaton");
 
     size_t cellsSize = initialSize * sizeof(AutomatonCell);
 
     automaton->size = initialSize;
-    automaton->cells = safeMalloc(cellsSize, "AC automaton cells");
+    automaton->cells = safeAlloc(cellsSize, "AC automaton cells");
     resetMemory(automaton->cells, cellsSize);
 
     return automaton;
@@ -197,7 +197,7 @@ Automaton *createAutomaton_BFS(const Trie *trie, List *list) {
 
 
 static inline Occurrence *createOccurrence(UserData userData, FoundNeedle needle) {
-    Occurrence *occurrence = safeMalloc(sizeof(Occurrence), "occurrence");
+    Occurrence *occurrence = safeAlloc(sizeof(Occurrence), "occurrence");
     occurrence->userData = userData;
     occurrence->next = NULL;
     occurrence->needle = needle;
@@ -284,7 +284,7 @@ static FoundNeedle automaton_returnNeedle(const Automaton *automaton, const Tail
     }
 
     const int size = trieLength + tailLength;
-    Needle *needle = safeMalloc(sizeof(char) * size, "AC needle characters");
+    Needle *needle = safeAlloc(sizeof(char) * size, "AC needle characters");
 
     if (0 > stateBase) {
         automaton_returnNeedle_tailFill(needle, trieLength, tailCell);

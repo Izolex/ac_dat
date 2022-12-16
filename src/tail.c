@@ -12,7 +12,7 @@ static TailIndex tailBuilder_findLastFilled(const TailBuilder *tailBuilder);
 
 
 Character *allocateCharacters(const TailCharIndex size) {
-    return safeMalloc(size * sizeof(Character), "Characters");
+    return safeAlloc(size * sizeof(Character), "Characters");
 }
 
 static void characters_free(Character *chars) {
@@ -22,9 +22,9 @@ static void characters_free(Character *chars) {
 
 
 Tail *createTail(const size_t size) {
-    Tail *tail = safeMalloc(sizeof(Tail), "Tail");
+    Tail *tail = safeAlloc(sizeof(Tail), "Tail");
     tail->size = (TailIndex)size;
-    tail->cells = safeMalloc(sizeof(TailCell) * tail->size, "Tail cells");
+    tail->cells = safeAlloc(sizeof(TailCell) * tail->size, "Tail cells");
 
     return tail;
 }
@@ -65,14 +65,14 @@ static void tailBuilder_poolInit(TailBuilder *tailBuilder, const TailIndex fromI
 }
 
 TailBuilder *createTailBuilder(const size_t size) {
-    TailBuilder *tailBuilder = safeMalloc(sizeof(TailBuilder), "TailBuilder");
+    TailBuilder *tailBuilder = safeAlloc(sizeof(TailBuilder), "TailBuilder");
 
     if (size < 2) {
         error("minimum initial tail size must be at least 2");
     }
 
     tailBuilder->size = (TailIndex)size;
-    tailBuilder->cells = safeMalloc(tailBuilder->size * sizeof(TailBuilderCell), "TailBuilder cells");
+    tailBuilder->cells = safeAlloc(tailBuilder->size * sizeof(TailBuilderCell), "TailBuilder cells");
 
     tailBuilder_poolInit(tailBuilder, 0, tailBuilder->size);
 

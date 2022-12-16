@@ -43,7 +43,7 @@ int getAvailableCores(void) {
 
 
 Job *createJob(void *userData) {
-    Job *job = safeMalloc(sizeof(Job), "job");
+    Job *job = safeAlloc(sizeof(Job), "job");
     job->userData = userData;
     job->nextJob = NULL;
 
@@ -128,7 +128,7 @@ static void *worker_function(void *userData) {
 }
 
 static Worker *createWorker(WorkerPool *pool) {
-    Worker *worker = safeMalloc(sizeof(Worker), "worker pool");
+    Worker *worker = safeAlloc(sizeof(Worker), "worker pool");
     worker->pool = pool;
     worker->thread = 0;
     worker->nextWorker = NULL;
@@ -144,7 +144,7 @@ WorkerPool *createWorkerPool(int count, JobHandler *handler) {
         error("minimum of 1 worker is required");
     }
 
-    WorkerPool *pool = safeMalloc(sizeof(WorkerPool), "worker pool");
+    WorkerPool *pool = safeAlloc(sizeof(WorkerPool), "worker pool");
     pool->workerList = createWorker(pool);
     pool->jobHandler = handler;
     pool->jobFirst = NULL;

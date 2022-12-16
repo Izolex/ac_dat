@@ -134,7 +134,7 @@ static UserDataList *file_loadUserDataList(FILE * restrict file, const Automaton
 
     for (AutomatonIndex i = 0; i < size; i++) {
         safeRead((void*) &userDataList->cells[i].size, sizeof(UserDataSize), 1, file);
-        userDataList->cells[i].value = safeMalloc(userDataList->cells[i].size, "user data");
+        userDataList->cells[i].value = safeAlloc(userDataList->cells[i].size, "user data");
         safeRead((void*) userDataList->cells[i].value, 1, userDataList->cells[i].size, file);
     }
 

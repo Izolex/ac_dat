@@ -47,7 +47,7 @@ static TrieIndex createState(const Character character, const TrieBase base) {
 
 
 TrieOptions *createTrieOptions(const bool useTail, const bool useUserData, const size_t childListInitSize) {
-    TrieOptions *options = safeMalloc(sizeof(TrieOptions), "TrieOptions");
+    TrieOptions *options = safeAlloc(sizeof(TrieOptions), "TrieOptions");
 
     options->useTail = useTail;
     options->useUserData = useUserData;
@@ -67,13 +67,13 @@ Trie *createTrie(TrieOptions *options, TailBuilder *tailBuilder, UserDataList *u
         error("minimum initial DAT size must be at least 4");
     }
 
-    Trie *trie = safeMalloc(sizeof(Trie), "Trie");
+    Trie *trie = safeAlloc(sizeof(Trie), "Trie");
 
     trie->options = options;
     trie->tailBuilder = tailBuilder;
     trie->userDataList = userDataList;
     trie->size = (TrieIndex)initialSize;
-    trie->cells = safeMalloc(trie->size * sizeof(TrieCell), "Trie cells");
+    trie->cells = safeAlloc(trie->size * sizeof(TrieCell), "Trie cells");
     trie->cells[0] = (TrieCell) {-(trie->size - 1), -2, NULL}; // TRIE_POOL_INFO
     trie->cells[1] = (TrieCell) {1, 0, createList(options->childListInitSize)}; // TRIE_POOL_START
     trie->cells[2] = (TrieCell) {0, -3, NULL};

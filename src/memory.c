@@ -14,7 +14,7 @@ static void allocError(const char *message) {
     error("can not allocate memory");
 }
 
-void *safeMalloc(const size_t size, const char *message) {
+void *safeAlloc(const size_t size, const char *message) {
     void *pointer = malloc(size);
     if (unlikely(!pointer)) {
         allocError(message);

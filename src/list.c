@@ -93,13 +93,13 @@ void list_free(List *list) {
 }
 
 List *createList(const size_t initialSize) {
-    List *list = safeMalloc(sizeof(List), "List");
+    List *list = safeAlloc(sizeof(List), "List");
 
     list_setFront(list, 0);
     list_setRear(list, 0);
     list_setSize(list, (ListIndex)initialSize);
 
-    list_setCells(list, safeMalloc(list->size * sizeof(ListCell), "List cells"));
+    list_setCells(list, safeAlloc(list->size * sizeof(ListCell), "List cells"));
     list_poolInit(list, 1, list->size - 1);
 
     list_setCell(list, 0, 1, list->size - 1, 0);
