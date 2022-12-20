@@ -9,6 +9,12 @@
 #include "definitions.h"
 
 
+enum fileHeader {
+    HAS_TAIL           = 0b01,
+    HAS_USER_DATA_LIST = 0b10,
+};
+
+
 static FILE *safeOpen(const char *filename, const char *mode);
 static void safeClose(FILE *file);
 static void safeWrite(const void * restrict pointer, size_t size, size_t items, FILE * restrict file);
@@ -88,9 +94,16 @@ static void file_storeUserDataList(FILE * restrict file, const AutomatonIndex si
 void file_store(const char *targetPath, const Automaton *automaton, const Tail *tail, const UserDataList *userDataList) {
     FILE *file = safeOpen(targetPath, "w+b");
 
+    unsigned char header = (tail? HAS_TAIL : 0) | (userDataList ? HAS_USER_DATA_LIST : 0);
+    safeWrite((const void*) &header, 1, 1, file);
+
     file_storeAutomaton(file, automaton);
-    file_storeTail(file, tail);
-    file_storeUserDataList(file, automaton->size, userDataList);
+    if (tail) {
+        file_storeTail(file, tail);
+    }
+    if (userDataList) {
+        file_storeUserDataList(file, automaton->size, userDataList);
+    }
 
     safeClose(file);
 }
@@ -148,10 +161,13 @@ FileData file_load(const char *targetPath) {
 
     FILE *file = safeOpen(targetPath, "rb");
 
+    unsigned char header;
+    safeRead(&header, 1, 1, file);
+
     FileData fileData;
     fileData.automaton = file_loadAutomaton(file);
-    fileData.tail = file_loadTail(file);
-    fileData.userDataList = file_loadUserDataList(file, fileData.automaton->size);
+    fileData.tail = header & HAS_TAIL ? file_loadTail(file) : NULL;
+    fileData.userDataList = header & HAS_USER_DATA_LIST ? file_loadUserDataList(file, fileData.automaton->size) : NULL;
 
     safeClose(file);
 
