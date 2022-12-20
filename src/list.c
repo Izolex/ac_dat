@@ -112,7 +112,7 @@ static void list_poolReallocate(List *list) {
     const ListIndex lastFree = list_getLastFree(list);
     const ListIndex newSize = (ListIndex)calculateAllocation(list->size);
 
-    list_setCells(list, safeRealloc(list->cells, newSize, sizeof(ListCell), "List cells"));
+    list_setCells(list, safeRealloc(list->cells, list->size, newSize, sizeof(ListCell), "List cells"));
     list_poolInit(list, list->size, newSize - 1);
 
     if (list_getFirstFree(list) == 0) {

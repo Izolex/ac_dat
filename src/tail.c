@@ -109,7 +109,7 @@ static TailIndex tailBuilder_findPrevFree(TailBuilder *tailBuilder, const TailIn
 }
 
 void tailBuilder_poolReallocate(TailBuilder *tailBuilder, const TailIndex newSize) {
-    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
+    tailBuilder->cells = safeRealloc(tailBuilder->cells, tailBuilder->size, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
 
     tailBuilder_poolInit(tailBuilder, tailBuilder->size, newSize);
 
@@ -160,8 +160,8 @@ TailIndex tailBuilder_insertChars(TailBuilder *tail, const TailCharIndex length,
 void tailBuilder_minimize(TailBuilder *tailBuilder) {
     const TailIndex newSize = tailBuilder_findLastFilled(tailBuilder) + 1;
 
+    tailBuilder->cells = safeRealloc(tailBuilder->cells, tailBuilder->size, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
     tailBuilder->size = newSize;
-    tailBuilder->cells = safeRealloc(tailBuilder->cells, newSize, sizeof(TailBuilderCell), "TailBuilder cells");
     tailBuilder->cells[0].nextFree = 0;
 }
 

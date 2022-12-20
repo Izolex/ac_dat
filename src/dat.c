@@ -134,7 +134,7 @@ static void trie_poolInit(Trie *trie, const TrieIndex fromIndex, const TrieIndex
 }
 
 static void trie_poolReallocate(Trie *trie, const TrieIndex newSize) {
-    trie->cells = safeRealloc(trie->cells, newSize, sizeof(TrieCell), "Trie");
+    trie->cells = safeRealloc(trie->cells, trie->size, newSize, sizeof(TrieCell), "Trie");
 
     trie_poolInit(trie, trie->size, newSize);
 

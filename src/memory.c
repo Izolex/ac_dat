@@ -6,6 +6,11 @@
 #include "definitions.h"
 
 
+#ifndef CACHE_LINE_SIZE
+#define CACHE_LINE_SIZE 64
+#endif
+
+
 static void allocError(const char *message);
 
 
@@ -14,20 +19,34 @@ static void allocError(const char *message) {
     error("can not allocate memory");
 }
 
-void *safeAlloc(const size_t size, const char *message) {
-    void *pointer = malloc(size);
+void *safeAlloc(const size_t neededSize, const char *message) {
+    void *pointer = aligned_alloc(
+            CACHE_LINE_SIZE,
+            (size_t) ceil((double) neededSize / CACHE_LINE_SIZE) * CACHE_LINE_SIZE
+    );
+
     if (unlikely(!pointer)) {
         allocError(message);
     }
+
     return pointer;
 }
 
-void *safeRealloc(void *pointer, const size_t count, const size_t size, const char *message) {
-    pointer = realloc(pointer, count * size);
+void *safeRealloc(void *pointer, const size_t oldCount, const size_t newCount, const size_t size, const char *message) {
+    void *newPointer;
+    if (newCount <= oldCount) {
+        newPointer = realloc(pointer, newCount * size);
+    } else {
+        newPointer = safeAlloc(newCount * size, message);
+        memcpy(newPointer, pointer, oldCount * size);
+        free(pointer);
+    }
+
     if (unlikely(!pointer)) {
         allocError(message);
     }
-    return pointer;
+
+    return newPointer;
 }
 
 void resetMemory(void *pointer, const size_t size) {

@@ -16,7 +16,7 @@ UserDataList *createUserDataList(const size_t initialSize) {
 }
 
 void userDataList_reallocate(UserDataList *userDataList, const UserDataIndex oldSize, const UserDataIndex newSize) {
-    userDataList->cells = safeRealloc(userDataList->cells, newSize, sizeof(UserData), "user data cells");
+    userDataList->cells = safeRealloc(userDataList->cells, oldSize, newSize, sizeof(UserData), "user data cells");
     for (UserDataIndex i = oldSize; i < newSize; i++) {
         userDataList->cells[i].size = 0;
     }
