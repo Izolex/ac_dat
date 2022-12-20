@@ -19,6 +19,7 @@ else()
 endif()
 
 
+add_subdirectory(bench)
 add_subdirectory(lib)
 add_subdirectory(example)
 add_subdirectory(cmd)
