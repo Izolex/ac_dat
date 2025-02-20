@@ -1,6 +1,6 @@
 # AC-DAT
 
-Implementation of [Aho-Corasick](http://cr.yp.to/bib/1975/aho.pdf) ([wiki](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm)) algorithm with [Double Array Trie](https://www.co-ding.com/assets/pdf/dat.pdf) data structure in [C](https://en.wikipedia.org/wiki/C_(programming_language)).
+Implementation of [Aho-Corasick](http://cr.yp.to/bib/1975/aho.pdf) ([wiki](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm)) algorithm with [Double Array Trie](https://linux.thai.net/~thep/datrie/datrie.html) data structure in [C](https://en.wikipedia.org/wiki/C_(programming_language)).
 Project provides search using [socket](https://en.wikipedia.org/wiki/Berkeley_sockets) and C library.
 The automaton can store whole [Unicode](https://en.wikipedia.org/wiki/Unicode) alphabet.
 User input must be [UTF8](https://en.wikipedia.org/wiki/UTF-8) encoded strings (they are encoded into [code points](https://en.wikipedia.org/wiki/Code_point) internally).
